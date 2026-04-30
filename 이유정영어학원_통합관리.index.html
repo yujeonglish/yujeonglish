@@ -1,0 +1,4166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>이유정영어학원 Yujeonglish — 통합 관리 시스템</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Playfair+Display:wght@700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--pink:#CC0066;--pink2:#FF1493;--pink3:#FFB6C1;--pink4:#FFF0F5;--gray:#f5f5f5;--border:#e8e8e8;--text:#222;--sub:#888}
+body{font-family:'Noto Sans KR',sans-serif;background:#f0f0f0;min-height:100vh}
+
+/* 헤더 */
+.app-header{background:#CC0066;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo-wrap{display:flex;align-items:center;gap:10px}
+.logo-books{display:flex;gap:2px;align-items:center}
+.b-l{width:12px;height:18px;background:#fff;border-radius:2px}
+.b-r{width:12px;height:18px;background:#FFB6C1;border-radius:2px}
+.b-s{width:2px;height:20px;background:#CC0066;border-radius:1px;margin:0 -1px;z-index:1;position:relative}
+.b-dot{width:6px;height:6px;background:#FFE4EF;border-radius:50%;margin-left:4px;align-self:flex-start;margin-top:1px}
+.logo-txt{display:flex;flex-direction:column;line-height:1.2}
+.logo-kr{font-size:12px;font-weight:700;color:#fff;letter-spacing:1px}
+.logo-en{font-size:11px;color:#FFB6C1;font-family:'Playfair Display',serif}
+.header-date{font-size:12px;color:#FFB6C1}
+
+/* 네비 */
+.nav{display:flex;gap:2px;background:#fff;border-bottom:1px solid var(--border);padding:0 16px;overflow-x:auto}
+.nav-btn{padding:12px 18px;font-size:13px;font-weight:500;color:var(--sub);border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;font-family:'Noto Sans KR',sans-serif}
+.nav-btn.active{color:var(--pink);border-bottom-color:var(--pink)}
+
+/* 메인 */
+.main{max-width:1100px;margin:0 auto;padding:20px 16px}
+.page{display:none}.page.active{display:block}
+
+/* 카드 */
+.card{background:#fff;border-radius:12px;border:1px solid var(--border);padding:20px;margin-bottom:16px}
+.card-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;gap:8px}
+
+/* 오늘 알림 */
+.alert-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.alert-card{border-radius:10px;padding:16px;text-align:center}
+.alert-card.callback{background:#FFF0F5;border:1px solid #f5c0d8}
+.alert-card.trial{background:#FFF8E8;border:1px solid #f5dfa0}
+.alert-card.register{background:#F0FDF4;border:1px solid #a8e6c0}
+.alert-num{font-size:32px;font-weight:300;margin-bottom:4px}
+.alert-card.callback .alert-num{color:var(--pink)}
+.alert-card.trial .alert-num{color:#B8860B}
+.alert-card.register .alert-num{color:#2E7D32}
+.alert-label{font-size:11px;color:var(--sub)}
+.alert-list{font-size:12px;margin-top:8px;color:var(--text)}
+
+/* 정원 현황 */
+.quota-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.quota-card{border-radius:8px;padding:10px 12px;border:1px solid var(--border);background:#fafafa}
+.quota-name{font-size:12px;font-weight:500;color:var(--text);margin-bottom:4px}
+.quota-bar-wrap{background:#eee;border-radius:10px;height:5px;margin-bottom:4px;overflow:hidden}
+.quota-bar{height:100%;border-radius:10px;transition:width 0.5s}
+.quota-info{font-size:11px;color:var(--sub);display:flex;justify-content:space-between}
+.quota-full{background:#FADADD;border-color:#f5b0b0}
+.quota-full .quota-name{color:#A32D2D}
+.quota-warn{background:#FFF3CD;border-color:#f5dfa0}
+
+/* 폼 */
+.form-section{margin-bottom:20px}
+.form-section-title{font-size:12px;letter-spacing:1.5px;color:var(--pink);margin-bottom:12px;font-weight:500;padding:6px 0;border-bottom:1px solid var(--pink4)}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.fg4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.full{grid-column:1/-1}
+.f{display:flex;flex-direction:column;gap:4px}
+.f label{font-size:11px;color:var(--sub)}
+.f input,.f select,.f textarea{padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'Noto Sans KR',sans-serif;color:var(--text);background:#fafafa}
+.f input:focus,.f select:focus,.f textarea:focus{outline:none;border-color:var(--pink);background:#fff}
+.f textarea{resize:vertical;min-height:60px}
+.check-group{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.check-group label{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text);cursor:pointer}
+.check-group input[type=checkbox]{accent-color:var(--pink)}
+
+/* 성적 그리드 */
+.grade-table{width:100%;border-collapse:collapse;font-size:12px}
+.grade-table th{background:#f5f5f5;padding:6px 8px;text-align:center;font-weight:500;color:var(--sub);border:1px solid var(--border)}
+.grade-table td{padding:5px 6px;border:1px solid var(--border);text-align:center}
+.grade-table input{width:100%;border:none;background:transparent;text-align:center;font-size:12px;font-family:'Noto Sans KR',sans-serif;padding:2px}
+.grade-table input:focus{outline:none;background:#fff5fb}
+
+/* 버튼 */
+.btn-row{display:flex;gap:10px;margin-top:16px}
+.btn-primary{padding:11px 24px;background:var(--pink);border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;color:#fff;font-family:'Noto Sans KR',sans-serif}
+.btn-primary:hover{background:var(--pink2)}
+.btn-secondary{padding:11px 20px;background:transparent;border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;color:var(--sub);font-family:'Noto Sans KR',sans-serif}
+.btn-secondary:hover{background:#f5f5f5}
+.btn-danger{padding:7px 14px;background:transparent;border:1px solid #f5b0b0;border-radius:6px;font-size:12px;cursor:pointer;color:#A32D2D;font-family:'Noto Sans KR',sans-serif}
+.btn-pink-sm{padding:5px 12px;background:var(--pink4);border:1px solid #f5c0d8;border-radius:6px;font-size:12px;cursor:pointer;color:var(--pink);font-family:'Noto Sans KR',sans-serif}
+
+/* 검색바 */
+.search-bar{display:flex;gap:10px;margin-bottom:16px}
+.search-bar input{flex:1;padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'Noto Sans KR',sans-serif}
+.search-bar input:focus{outline:none;border-color:var(--pink)}
+.search-bar select{padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'Noto Sans KR',sans-serif;color:var(--text)}
+
+/* 목록 테이블 */
+.list-table{width:100%;border-collapse:collapse;font-size:12px}
+.list-table th{background:#f8f8f8;padding:9px 10px;text-align:left;font-weight:500;color:var(--sub);border-bottom:1px solid var(--border);white-space:nowrap}
+.list-table td{padding:10px;border-bottom:1px solid #f5f5f5;color:var(--text);vertical-align:middle}
+.list-table tr:hover td{background:#fff8fb}
+.list-table tr:last-child td{border-bottom:none}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.badge-registered{background:#d6efdc;color:#1A6630}
+.badge-pending{background:#FFF3CD;color:#7B5800}
+.badge-trial{background:#E8F4FD;color:#185FA5}
+.badge-callback{background:var(--pink4);color:var(--pink)}
+.badge-cancel{background:#f5f5f5;color:#888}
+.badge-full{background:#FADADD;color:#A32D2D}
+
+/* 상세 모달 */
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:200;overflow-y:auto;padding:20px}
+.modal-overlay.show{display:flex;align-items:flex-start;justify-content:center}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:780px;overflow:hidden}
+.modal-header{background:var(--pink);padding:18px 24px;display:flex;justify-content:space-between;align-items:center}
+.modal-header h3{font-size:15px;color:#fff;font-weight:500}
+.modal-close{background:transparent;border:none;color:#FFB6C1;font-size:20px;cursor:pointer;padding:0 4px}
+.modal-body{padding:24px;max-height:80vh;overflow-y:auto}
+
+/* 성적표 */
+.report-preview{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.rp-header{background:var(--pink);padding:20px 24px;color:#fff}
+.rp-logo-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.rp-logo-kr{font-size:14px;font-weight:700;letter-spacing:1px}
+.rp-logo-en{font-size:13px;color:#FFB6C1;font-family:'Playfair Display',serif}
+.rp-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;margin-bottom:12px}
+.rp-chips{display:flex;gap:8px;flex-wrap:wrap}
+.rp-chip{background:rgba(255,255,255,0.15);border-radius:6px;padding:6px 12px}
+.rp-chip-label{font-size:9px;color:#FFB6C1;margin-bottom:2px}
+.rp-chip-val{font-size:12px;font-weight:500}
+.rp-body{padding:20px 24px}
+.rp-sec{font-size:10px;letter-spacing:2px;color:#aaa;margin-bottom:10px;font-weight:500}
+.rp-score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.rp-score-card{border:1px solid #f0f0f0;border-radius:8px;padding:10px;text-align:center}
+.rp-domain{font-size:10px;color:#aaa;margin-bottom:4px}
+.rp-val{font-size:22px;font-weight:300;color:#222}
+.rp-grade{font-size:10px;font-weight:500;margin-top:3px;padding:1px 6px;border-radius:10px;display:inline-block}
+.rp-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.rp-sum-card{background:#FFF0F5;border-radius:8px;padding:10px;text-align:center}
+.rp-sum-label{font-size:10px;color:var(--pink);margin-bottom:3px}
+.rp-sum-val{font-size:18px;font-weight:500;color:var(--pink)}
+.rp-bar-row{margin-bottom:8px}
+.rp-bar-meta{display:flex;justify-content:space-between;margin-bottom:3px}
+.rp-bar-name{font-size:11px;color:#666}
+.rp-bar-score{font-size:11px;font-weight:500;color:#333}
+.rp-bar-track{background:#f5f5f5;border-radius:10px;height:6px;overflow:hidden}
+.rp-bar-fill{height:100%;border-radius:10px}
+.rp-comment{background:#fff8fb;border-left:3px solid var(--pink);border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:12px}
+.rp-comment-text{font-size:12px;color:#444;line-height:1.8}
+.rp-rec{background:#FFF0F5;border-radius:8px;padding:12px 14px;border:1px solid #f5c0d8}
+.rp-rec-class{font-size:15px;font-weight:500;color:var(--pink);margin-bottom:3px}
+.rp-rec-desc{font-size:11px;color:#e088b4;line-height:1.5}
+.rp-footer{border-top:1px solid #f0f0f0;padding:12px 24px;display:flex;justify-content:space-between;align-items:center}
+.rp-footer-info{font-size:10px;color:#bbb}
+
+@media print{
+  .app-header,.nav,.search-bar,.btn-row,.modal-overlay > *:not(.modal){display:none}
+  .report-preview{border:none}
+}
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="logo-wrap">
+    <div class="logo-books">
+      <div class="b-l"></div><div class="b-s"></div><div class="b-r"></div>
+      <div class="b-dot"></div>
+    </div>
+    <div class="logo-txt">
+      <div class="logo-kr">이유정영어학원</div>
+      <div class="logo-en">Yujeonglish</div>
+    </div>
+  </div>
+  <div class="header-date" id="header-date"></div>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showPage('today')">오늘 현황</button>
+  <button class="nav-btn" onclick="showPage('prospective')">🌱 예비원생</button>
+  <button class="nav-btn" onclick="showPage('new-consult')">신규 상담 등록</button>
+  <button class="nav-btn" onclick="showPage('student-list')">학생 DB</button>
+  <button class="nav-btn" onclick="showPage('consult-log')">💬 상담 기록</button>
+  <button class="nav-btn" onclick="showPage('word-test')">📝 단어테스트</button>
+  <button class="nav-btn" onclick="showPage('word-dashboard')">📊 단어 대시보드</button>
+  <button class="nav-btn" onclick="showPage('retest-schedule')">🔔 재시 일정</button>
+  <button class="nav-btn" onclick="showPage('makeup')">📚 보강 일정</button>
+  <button class="nav-btn" onclick="showPage('level-test')">🎯 레벨테스트</button>
+  <button class="nav-btn" onclick="showPage('quota')">반별 정원</button>
+  <button class="nav-btn" onclick="showPage('timetable')">📅 시간표</button>
+  <button class="nav-btn" onclick="showPage('class-mgmt')">반 관리</button>
+  <button class="nav-btn" onclick="showPage('import')">📥 명단 가져오기</button>
+  <button class="nav-btn" onclick="showPage('report')">성적표 출력</button>
+</div>
+
+<div class="main">
+
+<!-- ══ 오늘 현황 ══ -->
+<div class="page active" id="page-today">
+  <div class="alert-grid">
+    <div class="alert-card callback">
+      <div class="alert-num" id="today-callback">0</div>
+      <div class="alert-label">오늘 콜백 예정</div>
+      <div class="alert-list" id="today-callback-list"></div>
+    </div>
+    <div class="alert-card trial">
+      <div class="alert-num" id="today-trial">0</div>
+      <div class="alert-label">오늘 청강 예정</div>
+      <div class="alert-list" id="today-trial-list"></div>
+    </div>
+    <div class="alert-card register">
+      <div class="alert-num" id="today-register">0</div>
+      <div class="alert-label">오늘 등록 예정</div>
+      <div class="alert-list" id="today-register-list"></div>
+    </div>
+    <div class="alert-card" style="background:#FFF3CD;border:1px solid #f5dfa0">
+      <div class="alert-num" style="color:#854F0B" id="today-retest">0</div>
+      <div class="alert-label">오늘 재시 예정</div>
+      <div class="alert-list" id="today-retest-list"></div>
+    </div>
+  </div>
+
+  <!-- 오늘 시간표 (교실×요일 표 형식) -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div class="card-title" style="margin-bottom:0" id="today-timetable-title">📅 오늘 시간표</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div style="font-size:11px;color:var(--sub)" id="today-dayname"></div>
+        <div style="display:flex;gap:8px">
+          <div style="display:flex;align-items:center;gap:3px;font-size:10px;color:var(--sub)"><div style="width:8px;height:8px;background:#1D9E75;border-radius:1px"></div>초등</div>
+          <div style="display:flex;align-items:center;gap:3px;font-size:10px;color:var(--sub)"><div style="width:8px;height:8px;background:#185FA5;border-radius:1px"></div>중등</div>
+          <div style="display:flex;align-items:center;gap:3px;font-size:10px;color:var(--sub)"><div style="width:8px;height:8px;background:#CC0066;border-radius:1px"></div>고등</div>
+        </div>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse" id="today-timetable-table">
+        <thead>
+          <tr>
+            <th style="background:#2D4A6E;color:#fff;padding:7px 4px;font-size:10px;width:44px;text-align:center;border:0.5px solid #1a3a5c">시간</th>
+            <th style="background:#1a3a5c;color:#fff;padding:7px 4px;font-size:10px;text-align:center;border:0.5px solid #1a3a5c" id="today-col-header">오늘</th>
+          </tr>
+        </thead>
+        <tbody id="today-timetable-tbody"></tbody>
+      </table>
+    </div>
+    <div id="today-timetable-empty" style="display:none;font-size:13px;color:var(--sub);padding:16px;text-align:center">
+      오늘은 수업이 없거나 수업시간이 입력되지 않은 반입니다.<br>
+      <span style="font-size:11px">반 관리 탭에서 수업시간을 입력하시면 자동으로 표시됩니다.</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⚠️ 정원 임박 반 현황</div>
+    <div class="quota-grid" id="quota-warning-grid"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 최근 상담 학생</div>
+    <table class="list-table" id="recent-table">
+      <thead><tr>
+        <th>상담일</th><th>학생명</th><th>학교/학년</th><th>배정반</th>
+        <th>콜백일</th><th>청강일</th><th>등록예정일</th><th>상태</th><th></th>
+      </tr></thead>
+      <tbody id="recent-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══ 예비원생 ══ -->
+<div class="page" id="page-prospective">
+
+  <!-- 요약 통계 -->
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px">
+    <div class="card" style="margin-bottom:0;text-align:center;padding:14px">
+      <div style="font-size:10px;color:var(--sub);margin-bottom:3px">전체 예비원생</div>
+      <div style="font-size:22px;font-weight:300;color:var(--text)" id="ps-total">0</div>
+    </div>
+    <div class="card" style="margin-bottom:0;text-align:center;padding:14px;background:#FFF8E8">
+      <div style="font-size:10px;color:#854F0B;margin-bottom:3px">📞 대기중</div>
+      <div style="font-size:22px;font-weight:300;color:#854F0B" id="ps-waiting">0</div>
+    </div>
+    <div class="card" style="margin-bottom:0;text-align:center;padding:14px;background:#E8F4FD">
+      <div style="font-size:10px;color:#185FA5;margin-bottom:3px">🎓 청강예정</div>
+      <div style="font-size:22px;font-weight:300;color:#185FA5" id="ps-trial">0</div>
+    </div>
+    <div class="card" style="margin-bottom:0;text-align:center;padding:14px;background:#F0FDF4">
+      <div style="font-size:10px;color:#1A6630;margin-bottom:3px">✅ 등록완료</div>
+      <div style="font-size:22px;font-weight:300;color:#1A6630" id="ps-registered">0</div>
+    </div>
+    <div class="card" style="margin-bottom:0;text-align:center;padding:14px;background:#f5f5f5">
+      <div style="font-size:10px;color:#888;margin-bottom:3px">❌ 미등록</div>
+      <div style="font-size:22px;font-weight:300;color:#888" id="ps-cancelled">0</div>
+    </div>
+  </div>
+
+  <!-- 빠른 입력 (전화문의용) -->
+  <div class="card">
+    <div class="card-title">📞 전화문의 / 예비원생 빠른 등록</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px">
+      <div class="f"><label>문의 날짜 *</label><input type="date" id="ps-date"></div>
+      <div class="f"><label>학생 이름 *</label><input type="text" id="ps-name" placeholder="홍길동"></div>
+      <div class="f"><label>학교</label><input type="text" id="ps-school" placeholder="성명여중"></div>
+      <div class="f"><label>학년</label>
+        <select id="ps-grade">
+          <option value="">선택</option>
+          <optgroup label="초등"><option>초3</option><option>초4</option><option>초5</option><option>초6</option></optgroup>
+          <optgroup label="중등"><option>중1</option><option>중2</option><option>중3</option></optgroup>
+          <optgroup label="고등"><option>고1</option><option>고2</option><option>고3</option></optgroup>
+        </select>
+      </div>
+      <div class="f"><label>학부모 연락처 *</label><input type="tel" id="ps-parent-tel" placeholder="01012345678"></div>
+      <div class="f"><label>학생 연락처</label><input type="tel" id="ps-student-tel" placeholder="01012345678"></div>
+      <div class="f"><label>문의 경로</label>
+        <select id="ps-route">
+          <option>전화문의</option><option>방문상담</option><option>레벨테스트</option>
+          <option>지인소개</option><option>인터넷</option><option>기타</option>
+        </select>
+      </div>
+      <div class="f"><label>희망 반</label>
+        <select id="ps-want-class"><option value="">미정</option></select>
+      </div>
+      <div class="f"><label>콜백 예정일</label><input type="date" id="ps-callback-date"></div>
+      <div class="f"><label>청강 예정일</label><input type="date" id="ps-trial-date"></div>
+      <div class="f"><label>청강 시간</label><input type="text" id="ps-trial-time" placeholder="예: 화 6:30~8:00"></div>
+      <div class="f"><label>상태</label>
+        <select id="ps-status">
+          <option value="대기중">대기중</option>
+          <option value="콜백예정">콜백예정</option>
+          <option value="청강예정">청강예정</option>
+          <option value="등록완료">등록완료</option>
+          <option value="미등록">미등록</option>
+        </select>
+      </div>
+      <div class="f" style="grid-column:span 4"><label>메모</label>
+        <input type="text" id="ps-note" placeholder="특이사항, 관심 반 시간대 등">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="saveProspective()">저장</button>
+      <button class="btn-secondary" onclick="clearProspectiveForm()">초기화</button>
+    </div>
+    <div id="ps-save-msg" style="font-size:12px;color:var(--pink);margin-top:8px;height:16px;text-align:center"></div>
+  </div>
+
+  <!-- 대기 순번 목록 -->
+  <div class="card">
+    <div class="card-title">📋 예비원생 대기 목록 <span style="font-size:11px;color:var(--sub);font-weight:400">— 문의일 순서대로 정렬됩니다</span></div>
+    <div class="search-bar">
+      <input type="text" id="ps-search" placeholder="이름, 학교, 연락처 검색..." oninput="renderProspectiveList()">
+      <select id="ps-filter-status" onchange="renderProspectiveList()">
+        <option value="">전체 상태</option>
+        <option value="대기중">대기중</option>
+        <option value="콜백예정">콜백예정</option>
+        <option value="청강예정">청강예정</option>
+        <option value="등록완료">등록완료</option>
+        <option value="미등록">미등록</option>
+      </select>
+      <select id="ps-filter-route" onchange="renderProspectiveList()">
+        <option value="">전체 경로</option>
+        <option>전화문의</option><option>방문상담</option><option>레벨테스트</option>
+        <option>지인소개</option><option>인터넷</option>
+      </select>
+    </div>
+    <table class="list-table">
+      <thead><tr>
+        <th style="width:40px">순번</th>
+        <th>문의일</th>
+        <th>학생명</th>
+        <th>학교/학년</th>
+        <th>경로</th>
+        <th>학부모 연락처</th>
+        <th>희망반</th>
+        <th>콜백일</th>
+        <th>청강일</th>
+        <th>상태</th>
+        <th>메모</th>
+        <th>관리</th>
+      </tr></thead>
+      <tbody id="ps-list-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══ 신규 상담 등록 ══ -->
+<div class="page" id="page-new-consult">
+<div class="card">
+  <div class="card-title">📝 신규 상담 등록 — Consulting Paper</div>
+
+  <div class="form-section">
+    <div class="form-section-title">1. 기본 정보</div>
+    <div class="fg">
+      <div class="f"><label>학생 성명 *</label><input type="text" id="c-name" placeholder="홍길동"></div>
+      <div class="f"><label>학교명</label><input type="text" id="c-school" placeholder="이유정중학교"></div>
+      <div class="f"><label>학년</label>
+        <select id="c-grade">
+          <option value="">선택</option>
+          <optgroup label="초등">
+            <option>초3</option><option>초4</option><option>초5</option><option>초6</option>
+          </optgroup>
+          <optgroup label="중등">
+            <option>중1</option><option>중2</option><option>중3</option>
+          </optgroup>
+          <optgroup label="고등">
+            <option>고1</option><option>고2</option><option>고3</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="f"><label>문과/이과</label>
+        <select id="c-track"><option value="">해당없음</option><option>문과</option><option>이과</option></select>
+      </div>
+      <div class="f"><label>학부모 성함</label><input type="text" id="c-parent" placeholder="김철수"></div>
+      <div class="f"><label>학부모 연락처 *</label><input type="tel" id="c-parent-tel" placeholder="01012345678"></div>
+      <div class="f"><label>학생 연락처</label><input type="tel" id="c-student-tel" placeholder="01012345678"></div>
+      <div class="f"><label>등록유형</label>
+        <select id="c-regtype"><option>신규</option><option>재등록</option></select>
+      </div>
+    </div>
+    <div class="f" style="margin-top:10px"><label>학원 방문 계기</label>
+      <div class="check-group">
+        <label><input type="checkbox" name="visit" value="인터넷"> 인터넷</label>
+        <label><input type="checkbox" name="visit" value="전단지"> 전단지</label>
+        <label><input type="checkbox" name="visit" value="지인소개"> 지인소개</label>
+        <label><input type="checkbox" name="visit" value="기타"> 기타</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="form-section-title">2. 학습 목표</div>
+    <div class="fg3">
+      <div class="f"><label>희망 영어 등급</label><input type="text" id="c-target-grade" placeholder="예: 2등급"></div>
+      <div class="f"><label>진학 희망 대학</label><input type="text" id="c-univ" placeholder="예: 연세대"></div>
+      <div class="f"><label>진학 희망 전공</label><input type="text" id="c-major" placeholder="예: 경영학과"></div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="form-section-title">3. 성적 현황</div>
+    <table class="grade-table">
+      <thead>
+        <tr><th>학년</th><th>영어내신(중간)</th><th>영어내신(기말)</th><th>모의고사</th><th>수학내신</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>중1</td><td><input type="text" id="g-m1-mid" placeholder="-"></td><td><input type="text" id="g-m1-fin"></td><td><input type="text" id="g-m1-mock"></td><td><input type="text" id="g-m1-math"></td></tr>
+        <tr><td>중2</td><td><input type="text" id="g-m2-mid"></td><td><input type="text" id="g-m2-fin"></td><td><input type="text" id="g-m2-mock"></td><td><input type="text" id="g-m2-math"></td></tr>
+        <tr><td>중3</td><td><input type="text" id="g-m3-mid"></td><td><input type="text" id="g-m3-fin"></td><td><input type="text" id="g-m3-mock"></td><td><input type="text" id="g-m3-math"></td></tr>
+        <tr><td>고1</td><td><input type="text" id="g-h1-mid"></td><td><input type="text" id="g-h1-fin"></td><td><input type="text" id="g-h1-mock"></td><td><input type="text" id="g-h1-math"></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="form-section">
+    <div class="form-section-title">4. 영어 학습 역량</div>
+    <div class="f" style="margin-bottom:10px"><label>최근 영어 학습 형태</label>
+      <div class="check-group">
+        <label><input type="checkbox" name="study" value="과외"> 과외</label>
+        <label><input type="checkbox" name="study" value="학원"> 학원</label>
+        <label><input type="checkbox" name="study" value="공부방"> 공부방</label>
+        <label><input type="checkbox" name="study" value="스스로"> 스스로</label>
+      </div>
+    </div>
+    <div class="f" style="margin-bottom:10px"><label>취약 영역</label>
+      <div class="check-group">
+        <label><input type="checkbox" name="weak" value="문법"> 문법</label>
+        <label><input type="checkbox" name="weak" value="작문"> 작문</label>
+        <label><input type="checkbox" name="weak" value="독해"> 독해</label>
+        <label><input type="checkbox" name="weak" value="리스닝"> 리스닝</label>
+        <label><input type="checkbox" name="weak" value="Speaking"> Speaking</label>
+        <label><input type="checkbox" name="weak" value="단어"> 단어</label>
+      </div>
+    </div>
+    <div class="f"><label>영어 고민 (해당 항목 체크)</label>
+      <div class="check-group" style="flex-direction:column;gap:5px">
+        <label><input type="checkbox" name="worry" value="단어암기속도"> 단어 암기 속도가 느리다</label>
+        <label><input type="checkbox" name="worry" value="실수가많다"> 실수가 많다</label>
+        <label><input type="checkbox" name="worry" value="응용문제약함"> 응용 문제에 약하다</label>
+        <label><input type="checkbox" name="worry" value="문법이해어려움"> 설명을 들어도 문법 개념 이해가 어렵다</label>
+        <label><input type="checkbox" name="worry" value="영어가싫다"> 영어가 싫다</label>
+        <label><input type="checkbox" name="worry" value="실력안늠"> 영어 공부를 많이 해도 실력이 늘지 않는다</label>
+        <label><input type="checkbox" name="worry" value="이유모름"> 영어 공부를 왜 해야 하는지 모르겠다</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="form-section-title">5. 레벨테스트 결과 (원장님 입력)</div>
+    <div class="fg4">
+      <div class="f"><label>듣기 점수</label><input type="number" id="lt-listening" min="0" max="100" placeholder="0~100"></div>
+      <div class="f"><label>읽기 점수</label><input type="number" id="lt-reading" min="0" max="100" placeholder="0~100"></div>
+      <div class="f"><label>쓰기 점수</label><input type="number" id="lt-writing" min="0" max="100" placeholder="0~100"></div>
+      <div class="f"><label>말하기 점수</label><input type="number" id="lt-speaking" min="0" max="100" placeholder="0~100"></div>
+    </div>
+    <div class="fg" style="margin-top:10px">
+      <div class="f"><label>배정반</label>
+        <select id="lt-assigned-class">
+          <option value="">선택</option>
+          <optgroup label="초등">
+            <option>초등 6A</option><option>초등 6B</option>
+          </optgroup>
+          <optgroup label="중등">
+            <option>1-1</option><option>1-2</option><option>1-3</option><option>1-4</option>
+            <option>2-1</option><option>2-2</option><option>2-3</option>
+            <option>3-1</option><option>3-2</option><option>3-3</option>
+          </optgroup>
+          <optgroup label="고등">
+            <option>고1</option><option>고2</option><option>고3</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="f"><label>담당 강사</label><input type="text" id="lt-teacher" placeholder="이수진 선생님"></div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="form-section-title">6. 등록 진행 현황</div>
+    <div class="fg">
+      <div class="f"><label>상담일 *</label><input type="date" id="c-consult-date"></div>
+      <div class="f"><label>콜백 예정일</label><input type="date" id="c-callback-date"></div>
+      <div class="f"><label>청강 예정일</label><input type="date" id="c-trial-date"></div>
+      <div class="f"><label>청강 시간</label><input type="text" id="c-trial-time" placeholder="예: 화 6:30~8:00"></div>
+      <div class="f"><label>등록 예정일</label><input type="date" id="c-reg-date"></div>
+      <div class="f"><label>현재 상태</label>
+        <select id="c-status">
+          <option value="상담완료">상담완료</option>
+          <option value="콜백예정">콜백예정</option>
+          <option value="청강예정">청강예정</option>
+          <option value="등록예정">등록예정</option>
+          <option value="등록완료">등록완료</option>
+          <option value="미등록">미등록</option>
+        </select>
+      </div>
+    </div>
+    <div class="f" style="margin-top:10px"><label>비고</label>
+      <textarea id="c-note" placeholder="특이사항, 메모 등 자유롭게 입력하세요."></textarea>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-primary" onclick="saveConsult()">저장하기</button>
+    <button class="btn-secondary" onclick="clearForm()">초기화</button>
+  </div>
+  <div id="save-msg" style="font-size:12px;color:var(--pink);margin-top:8px;height:16px;text-align:center"></div>
+</div>
+</div>
+
+<!-- ══ 학생 DB ══ -->
+<div class="page" id="page-student-list">
+  <div class="card">
+    <div class="card-title">🗂 학생 DB</div>
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="이름, 학교, 연락처로 검색..." oninput="renderList()">
+      <select id="search-status" onchange="renderList()">
+        <option value="">전체 상태</option>
+        <option>상담완료</option><option>콜백예정</option><option>청강예정</option>
+        <option>등록예정</option><option>등록완료</option><option>미등록</option>
+      </select>
+      <select id="search-class" onchange="renderList()">
+        <option value="">전체 반</option>
+        <option>초등 6A</option><option>초등 6B</option>
+        <option>1-1</option><option>1-2</option><option>1-3</option><option>1-4</option>
+        <option>2-1</option><option>2-2</option><option>2-3</option>
+        <option>3-1</option><option>3-2</option><option>3-3</option>
+        <option>고1</option><option>고2</option><option>고3</option>
+      </select>
+    </div>
+    <table class="list-table">
+      <thead><tr>
+        <th>상담일</th><th>학생명</th><th>학교/학년</th><th>학부모 연락처</th>
+        <th>배정반</th><th>레벨테스트</th><th>콜백일</th><th>등록예정일</th><th>상태</th><th>관리</th>
+      </tr></thead>
+      <tbody id="student-tbody"></tbody>
+    </table>
+    <div id="list-empty" style="text-align:center;padding:40px;color:var(--sub);font-size:13px;display:none">
+      등록된 학생이 없습니다. 신규 상담 등록 탭에서 추가하세요.
+    </div>
+  </div>
+</div>
+
+<!-- ══ 반별 정원 ══ -->
+<div class="page" id="page-quota">
+  <!-- 통계 섹션 -->
+  <div class="card">
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+      <div class="card-title" style="margin-bottom:0">📊 학년별 · 학교별 현황</div>
+      <select id="quota-stat-type" onchange="renderQuotaStats()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'Noto Sans KR',sans-serif">
+        <option value="grade">학년별 인원</option>
+        <option value="school">학교별 인원</option>
+        <option value="grade_school">학년+학교별 인원</option>
+      </select>
+    </div>
+    <div id="quota-stats-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px"></div>
+  </div>
+
+  <!-- 좌우 레이아웃: 반 카드 + 상세 패널 -->
+  <div style="display:grid;grid-template-columns:1fr 380px;gap:12px;align-items:start">
+    <!-- 왼쪽: 반 카드 -->
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title">👥 반별 정원 현황 <span style="font-size:11px;color:var(--sub);font-weight:400">— 반 카드 클릭 시 우측에 명단 표시</span></div>
+      <div style="margin-bottom:10px;display:flex;gap:6px;flex-wrap:wrap">
+        <button onclick="filterQuotaType('')" class="btn-pink-sm" id="qf-all">전체</button>
+        <button onclick="filterQuotaType('초등')" class="btn-secondary" id="qf-초등" style="padding:5px 12px;font-size:12px;border-radius:6px">초등</button>
+        <button onclick="filterQuotaType('중등')" class="btn-secondary" id="qf-중등" style="padding:5px 12px;font-size:12px;border-radius:6px">중등</button>
+        <button onclick="filterQuotaType('고등')" class="btn-secondary" id="qf-고등" style="padding:5px 12px;font-size:12px;border-radius:6px">고등</button>
+      </div>
+      <div class="quota-grid" id="quota-full-grid"></div>
+    </div>
+
+    <!-- 오른쪽: 상세 패널 (sticky) -->
+    <div id="quota-detail-card" style="display:none;position:sticky;top:70px">
+      <div class="card" style="margin-bottom:0">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-size:14px;font-weight:500;color:var(--text)" id="quota-detail-title">반 학생 명단</div>
+          <button onclick="document.getElementById('quota-detail-card').style.display='none'" style="background:transparent;border:none;font-size:18px;cursor:pointer;color:var(--sub)">✕</button>
+        </div>
+        <!-- 학교별 분포 태그 -->
+        <div id="quota-school-dist" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px"></div>
+        <!-- 학생 목록 -->
+        <div style="max-height:60vh;overflow-y:auto">
+          <table class="list-table" style="font-size:12px">
+            <thead><tr>
+              <th>학생명</th><th>학교</th><th>학년</th><th>학부모번호</th>
+            </tr></thead>
+            <tbody id="quota-detail-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 성적표 출력 ══ -->
+<!-- ══ 단어테스트 입력 ══ -->
+<div class="page" id="page-word-test">
+  <div class="card">
+    <div class="card-title">📝 단어테스트 기록 입력 (강사용)</div>
+    <div style="background:#FFF0F5;border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#CC0066;line-height:1.7">
+      통과기준: 클래스카드 <b>90점↑</b> AND 종이시험 <b>90점↑</b> 둘 다 충족 시 Pass | 괴리의심: 클카 90↑인데 종이 90↓
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px">
+      <div class="f"><label>날짜 *</label><input type="date" id="wt-date"></div>
+      <div class="f"><label>학생 이름 *</label>
+        <input type="text" id="wt-name" placeholder="이름 입력..." oninput="wtAutoComplete()" autocomplete="off">
+        <div id="wt-suggest" style="position:relative"></div>
+      </div>
+      <div class="f"><label>학년/반</label>
+        <select id="wt-class"><option value="">선택</option></select>
+      </div>
+      <div class="f"><label>과제</label>
+        <select id="wt-hw">
+          <option value="P">P (통과)</option>
+          <option value="F">F (미제출)</option>
+        </select>
+      </div>
+      <div class="f"><label>종이시험 점수</label><input type="number" id="wt-paper" min="0" max="100" placeholder="0~100" oninput="wtCalc()"></div>
+      <div class="f"><label>클래스카드 점수</label><input type="number" id="wt-online" min="0" max="100" placeholder="0~100" oninput="wtCalc()"></div>
+      <div class="f"><label>단어판정 (자동)</label>
+        <input type="text" id="wt-judge" readonly style="background:#f5f5f5;font-weight:500">
+      </div>
+      <div class="f"><label>괴리판정 (자동)</label>
+        <input type="text" id="wt-gap" readonly style="background:#f5f5f5;font-weight:500">
+      </div>
+      <div class="f"><label>학부모 연락처</label><input type="text" id="wt-parenttel" placeholder="자동입력"></div>
+      <div class="f" style="grid-column:span 3"><label>비고</label><input type="text" id="wt-note" placeholder="특이사항"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="saveWordTest()">기록 저장</button>
+      <button class="btn-secondary" onclick="clearWordTest()">초기화</button>
+    </div>
+    <div id="wt-msg" style="font-size:12px;color:var(--pink);margin-top:8px;height:16px;text-align:center"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 최근 단어테스트 기록</div>
+    <div class="search-bar">
+      <input type="text" id="wt-search" placeholder="이름 검색..." oninput="renderWordTestList()">
+      <select id="wt-search-class" onchange="renderWordTestList()"><option value="">전체 반</option></select>
+      <select id="wt-search-judge" onchange="renderWordTestList()">
+        <option value="">전체</option>
+        <option value="Retest">재시</option>
+        <option value="F">과제 Fail</option>
+        <option value="의심">괴리 의심</option>
+      </select>
+      <input type="date" id="wt-search-date" onchange="renderWordTestList()">
+    </div>
+    <table class="list-table">
+      <thead><tr>
+        <th>날짜</th><th>학생명</th><th>반</th><th>과제</th>
+        <th>종이점수</th><th>클래스카드</th><th>단어판정</th><th>괴리판정</th>
+        <th>학부모번호</th><th>비고</th><th>관리</th>
+      </tr></thead>
+      <tbody id="wt-list-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══ 단어 대시보드 ══ -->
+<div class="page" id="page-word-dashboard">
+  <!-- 요약 통계 -->
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px">
+    <div class="card" style="margin-bottom:0;text-align:center;padding:16px">
+      <div style="font-size:10px;color:var(--sub);margin-bottom:4px">전체 기록</div>
+      <div style="font-size:24px;font-weight:300;color:var(--text)" id="wd-total">0</div>
+    </div>
+    <div class="card" style="margin-bottom:0;text-align:center;padding:16px;background:#FFF0F5">
+      <div style="font-size:10px;color:var(--pink);margin-bottom:4px">과제 미제출</div>
+      <div style="font-size:24px;font-weight:300;color:var(--pink)" id="wd-fail">0</div>
+    </div>
+    <div class="card" style="margin-bottom:0;text-align:center;padding:16px;background:#FFF8E8">
+      <div style="font-size:10px;color:#854F0B;margin-bottom:4px">단어 재시</div>
+      <div style="font-size:24px;font-weight:300;color:#854F0B" id="wd-retest">0</div>
+    </div>
+    <div class="card" style="margin-bottom:0;text-align:center;padding:16px;background:#FFF5FA">
+      <div style="font-size:10px;color:#7B1450;margin-bottom:4px">괴리 의심</div>
+      <div style="font-size:24px;font-weight:300;color:#7B1450" id="wd-suspect">0</div>
+    </div>
+    <div class="card" style="margin-bottom:0;text-align:center;padding:16px;background:#F0FDF4">
+      <div style="font-size:10px;color:#1A6630;margin-bottom:4px">Pass 비율</div>
+      <div style="font-size:24px;font-weight:300;color:#1A6630" id="wd-pass-rate">0%</div>
+    </div>
+  </div>
+
+  <!-- 날짜 필터 -->
+  <div class="card" style="margin-bottom:12px">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <select id="wd-filter-class" onchange="renderWordDashboard()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'Noto Sans KR',sans-serif">
+        <option value="">전체 반</option>
+      </select>
+      <input type="date" id="wd-filter-date" onchange="renderWordDashboard()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+      <button class="btn-secondary" onclick="document.getElementById('wd-filter-date').value='';document.getElementById('wd-filter-class').value='';renderWordDashboard()">필터 초기화</button>
+      <span style="font-size:12px;color:var(--sub)" id="wd-filter-info"></span>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+    <!-- 과제 미제출 -->
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title" style="color:#8B0000;border-color:#f5c0c0">❌ 과제 미제출</div>
+      <table class="list-table" style="font-size:11px">
+        <thead><tr><th>날짜</th><th>학생</th><th>반</th><th>학부모번호</th></tr></thead>
+        <tbody id="wd-fail-tbody"></tbody>
+      </table>
+    </div>
+    <!-- 단어 재시 -->
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title" style="color:#854F0B;border-color:#f5dfa0">🔁 단어 재시</div>
+      <table class="list-table" style="font-size:11px">
+        <thead><tr><th>날짜</th><th>학생</th><th>반</th><th>종이</th><th>클카</th></tr></thead>
+        <tbody id="wd-retest-tbody"></tbody>
+      </table>
+    </div>
+    <!-- 괴리 의심 -->
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title" style="color:#7B1450;border-color:#f5c0d8">⚠️ 괴리 의심</div>
+      <table class="list-table" style="font-size:11px">
+        <thead><tr><th>날짜</th><th>학생</th><th>반</th><th>종이</th><th>클카</th></tr></thead>
+        <tbody id="wd-suspect-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 반별 현황 -->
+  <div class="card" style="margin-top:12px">
+    <div class="card-title">📋 반별 단어테스트 현황</div>
+    <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center">
+      <select id="wd-class-detail" onchange="renderWordClassDetail()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'Noto Sans KR',sans-serif">
+        <option value="">반 선택</option>
+      </select>
+      <input type="date" id="wd-class-date" onchange="renderWordClassDetail()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+    </div>
+    <table class="list-table">
+      <thead><tr>
+        <th>날짜</th><th>학생명</th><th>과제</th><th>종이점수</th>
+        <th>클래스카드</th><th>단어판정</th><th>괴리판정</th><th>비고</th>
+      </tr></thead>
+      <tbody id="wd-class-detail-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══ 재시 일정 ══ -->
+<div class="page" id="page-retest-schedule">
+  <!-- 알리고 API 설정 -->
+  <div class="card">
+    <div class="card-title">⚙️ 알리고 문자 발송 설정</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+      <div class="f"><label>알리고 아이디</label><input type="text" id="aligo-id" placeholder="알리고 아이디"></div>
+      <div class="f"><label>알리고 API 키</label><input type="password" id="aligo-key" placeholder="API 키"></div>
+      <div class="f"><label>발신 번호</label><input type="text" id="aligo-sender" placeholder="학원 전화번호 (예: 0531234567)"></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn-primary" onclick="saveAligoConfig()">설정 저장</button>
+      <button class="btn-secondary" onclick="testAligo()">테스트 문자 발송</button>
+      <span id="aligo-config-msg" style="font-size:12px;color:var(--pink)"></span>
+    </div>
+  </div>
+
+  <!-- 재시 일정 등록 -->
+  <div class="card">
+    <div class="card-title">➕ 재시 일정 등록</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px">
+      <div class="f"><label>재시 종류 *</label>
+        <select id="rs-type">
+          <option value="단어재시">단어재시</option>
+          <option value="문법시험재시">문법시험재시</option>
+          <option value="월말평가재시">월말평가재시</option>
+          <option value="기타재시">기타재시</option>
+        </select>
+      </div>
+      <div class="f"><label>재시 날짜 *</label><input type="date" id="rs-date"></div>
+      <div class="f"><label>재시 시간</label><input type="text" id="rs-time" placeholder="예: 화 6:30~7:00"></div>
+      <div class="f"><label>학생 이름 *</label>
+        <input type="text" id="rs-name" placeholder="이름 입력..." oninput="rsAutoComplete()" autocomplete="off">
+        <div id="rs-suggest" style="position:relative"></div>
+      </div>
+      <div class="f"><label>학년/반</label>
+        <select id="rs-class"><option value="">선택</option></select>
+      </div>
+      <div class="f"><label>학부모 연락처</label><input type="text" id="rs-parent-tel" placeholder="자동입력"></div>
+      <div class="f"><label>학생 연락처</label><input type="text" id="rs-student-tel" placeholder="자동입력"></div>
+      <div class="f"><label>알림 문자 발송</label>
+        <select id="rs-sms">
+          <option value="Y">발송 예정</option>
+          <option value="N">발송 안 함</option>
+        </select>
+      </div>
+      <div class="f" style="grid-column:span 4"><label>비고 / 메모</label>
+        <input type="text" id="rs-note" placeholder="예: 1단원 단어 20개, 문법 2단원">
+      </div>
+    </div>
+
+    <!-- 문자 내용 미리보기 -->
+    <div style="background:#FFF0F5;border-radius:10px;padding:12px 14px;margin-bottom:12px">
+      <div style="font-size:11px;color:#CC0066;margin-bottom:6px;font-weight:500">📱 발송될 문자 내용 미리보기</div>
+      <div id="rs-sms-preview" style="font-size:12px;color:#444;line-height:1.8;white-space:pre-line"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" onclick="saveRetestSchedule()">일정 저장</button>
+      <button class="btn-secondary" onclick="clearRetestForm()">초기화</button>
+    </div>
+    <div id="rs-msg" style="font-size:12px;color:var(--pink);margin-top:8px;height:16px;text-align:center"></div>
+  </div>
+
+  <!-- 재시 일정 목록 -->
+  <div class="card">
+    <div class="card-title">📋 재시 일정 목록</div>
+    <div class="search-bar">
+      <input type="text" id="rs-search" placeholder="이름 검색..." oninput="renderRetestList()">
+      <select id="rs-filter-type" onchange="renderRetestList()">
+        <option value="">전체 종류</option>
+        <option>단어재시</option><option>문법시험재시</option>
+        <option>월말평가재시</option><option>기타재시</option>
+      </select>
+      <select id="rs-filter-status" onchange="renderRetestList()">
+        <option value="">전체 상태</option>
+        <option value="예정">예정</option>
+        <option value="완료">완료</option>
+        <option value="취소">취소</option>
+      </select>
+      <input type="date" id="rs-filter-date" onchange="renderRetestList()">
+    </div>
+    <table class="list-table">
+      <thead><tr>
+        <th>재시날짜</th><th>종류</th><th>학생명</th><th>반</th>
+        <th>시간</th><th>학부모번호</th><th>학생번호</th>
+        <th>문자</th><th>상태</th><th>비고</th><th>관리</th>
+      </tr></thead>
+      <tbody id="rs-list-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══ 레벨테스트 입력 ══ -->
+<div class="page" id="page-level-test">
+  <div class="card">
+    <div class="card-title">🎯 레벨테스트 성적 입력</div>
+    <div style="background:#FFF0F5;border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#CC0066;line-height:1.7">
+      주간평가 / 월말평가 / 레벨테스트 모두 여기서 입력하세요. 저장 후 바로 성적표 출력 가능합니다.
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px">
+      <div class="f"><label>시험 종류 *</label>
+        <select id="lt2-type">
+          <option value="레벨테스트">레벨테스트</option>
+          <option value="주간평가">주간평가</option>
+          <option value="월말평가">월말평가</option>
+          <option value="반편성테스트">반편성테스트</option>
+        </select>
+      </div>
+      <div class="f"><label>시험 날짜 *</label><input type="date" id="lt2-date"></div>
+      <div class="f"><label>학생 이름 *</label>
+        <input type="text" id="lt2-name" placeholder="이름 입력..." oninput="lt2AutoComplete()" autocomplete="off">
+        <div id="lt2-suggest" style="position:relative"></div>
+      </div>
+      <div class="f"><label>학년/반</label>
+        <select id="lt2-class"><option value="">선택</option></select>
+      </div>
+      <div class="f"><label>듣기 점수</label><input type="number" id="lt2-listening" min="0" max="100" placeholder="0~100" oninput="lt2Calc()"></div>
+      <div class="f"><label>읽기 점수</label><input type="number" id="lt2-reading" min="0" max="100" placeholder="0~100" oninput="lt2Calc()"></div>
+      <div class="f"><label>쓰기 점수</label><input type="number" id="lt2-writing" min="0" max="100" placeholder="0~100" oninput="lt2Calc()"></div>
+      <div class="f"><label>말하기 점수</label><input type="number" id="lt2-speaking" min="0" max="100" placeholder="0~100" oninput="lt2Calc()"></div>
+      <div class="f"><label>총점 (자동)</label><input type="text" id="lt2-total" readonly style="background:#f5f5f5;font-weight:500;color:#CC0066"></div>
+      <div class="f"><label>평균 (자동)</label><input type="text" id="lt2-avg" readonly style="background:#f5f5f5;font-weight:500;color:#CC0066"></div>
+      <div class="f"><label>추천 레벨 (자동)</label><input type="text" id="lt2-level" readonly style="background:#f5f5f5;font-weight:500;color:#CC0066"></div>
+      <div class="f"><label>담당 강사</label><input type="text" id="lt2-teacher" placeholder="홍길동 선생님"></div>
+      <div class="f" style="grid-column:span 4"><label>강사 코멘트</label>
+        <textarea id="lt2-comment" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'Noto Sans KR',sans-serif;resize:vertical;min-height:70px" placeholder="학생의 강점, 보완점, 학습 방향 등을 입력하세요."></textarea>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="saveLT2()">저장 + 성적표 미리보기</button>
+      <button class="btn-secondary" onclick="clearLT2()">초기화</button>
+    </div>
+    <div id="lt2-msg" style="font-size:12px;color:var(--pink);margin-top:8px;height:16px;text-align:center"></div>
+  </div>
+
+  <!-- 성적표 미리보기 -->
+  <div id="lt2-preview-area" style="display:none">
+    <div class="report-preview" id="lt2-preview"></div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn-primary" onclick="window.print()">🖨 인쇄 / PDF 저장</button>
+    </div>
+  </div>
+
+  <!-- 최근 기록 -->
+  <div class="card">
+    <div class="card-title">📋 레벨테스트 기록 목록</div>
+    <div class="search-bar">
+      <input type="text" id="lt2-search" placeholder="이름 검색..." oninput="renderLT2List()">
+      <select id="lt2-search-type" onchange="renderLT2List()">
+        <option value="">전체 유형</option>
+        <option>레벨테스트</option><option>주간평가</option><option>월말평가</option><option>반편성테스트</option>
+      </select>
+      <select id="lt2-search-class" onchange="renderLT2List()"><option value="">전체 반</option></select>
+    </div>
+    <table class="list-table">
+      <thead><tr>
+        <th>날짜</th><th>유형</th><th>학생명</th><th>반</th>
+        <th>듣기</th><th>읽기</th><th>쓰기</th><th>말하기</th>
+        <th>평균</th><th>레벨</th><th>관리</th>
+      </tr></thead>
+      <tbody id="lt2-list-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══ 상담 기록 ══ -->
+<div class="page" id="page-consult-log">
+  <div class="card">
+    <div class="card-title">💬 학생별 상담 기록</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+      <div class="f"><label>학생 이름 *</label>
+        <input type="text" id="cl-name" placeholder="이름 입력..." oninput="clAutoComplete()" autocomplete="off">
+        <div id="cl-suggest" style="position:relative"></div>
+      </div>
+      <div class="f"><label>상담 날짜 *</label><input type="date" id="cl-date"></div>
+      <div class="f"><label>상담 유형</label>
+        <select id="cl-type">
+          <option>정기 상담</option>
+          <option>학부모 전화</option>
+          <option>학부모 방문</option>
+          <option>학생 면담</option>
+          <option>입학 상담</option>
+          <option>불만/건의</option>
+          <option>기타</option>
+        </select>
+      </div>
+      <div class="f"><label>다음 액션</label>
+        <select id="cl-action">
+          <option value="">없음</option>
+          <option>콜백 예정</option>
+          <option>청강 안내</option>
+          <option>학습지도 강화</option>
+          <option>학부모 재연락</option>
+          <option>반 조정 검토</option>
+        </select>
+      </div>
+      <div class="f"><label>다음 액션 날짜</label><input type="date" id="cl-action-date"></div>
+      <div class="f" style="grid-column:span 3"><label>상담 내용 *</label>
+        <textarea id="cl-content" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'Noto Sans KR',sans-serif;resize:vertical;min-height:70px" placeholder="상담 내용을 자유롭게 입력하세요."></textarea>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="saveConsultLog()">상담 기록 저장</button>
+      <button class="btn-secondary" onclick="clearConsultLog()">초기화</button>
+    </div>
+    <div id="cl-msg" style="font-size:12px;color:var(--pink);margin-top:8px;height:16px;text-align:center"></div>
+  </div>
+
+  <!-- 상담 기록 목록 -->
+  <div class="card">
+    <div class="card-title">📋 전체 상담 기록</div>
+    <div class="search-bar">
+      <input type="text" id="cl-search" placeholder="이름 검색..." oninput="renderConsultLog()">
+      <select id="cl-search-type" onchange="renderConsultLog()">
+        <option value="">전체 유형</option>
+        <option>정기 상담</option><option>학부모 전화</option><option>학부모 방문</option>
+        <option>학생 면담</option><option>입학 상담</option><option>불만/건의</option><option>기타</option>
+      </select>
+      <input type="date" id="cl-search-date" onchange="renderConsultLog()">
+    </div>
+    <table class="list-table">
+      <thead><tr>
+        <th>날짜</th><th>학생명</th><th>유형</th><th>상담 내용 요약</th>
+        <th>다음 액션</th><th>액션 날짜</th><th>관리</th>
+      </tr></thead>
+      <tbody id="cl-list-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="page" id="page-report">
+  <div class="card">
+    <div class="card-title">🖨 성적표 출력</div>
+    <div class="search-bar" style="margin-bottom:12px">
+      <input type="text" id="report-search" placeholder="학생 이름으로 검색..." oninput="renderReportList()">
+    </div>
+    <table class="list-table" style="margin-bottom:16px">
+      <thead><tr><th>학생명</th><th>학년</th><th>배정반</th><th>레벨테스트 평균</th><th>상담일</th><th></th></tr></thead>
+      <tbody id="report-tbody"></tbody>
+    </table>
+  </div>
+  <div id="report-area" style="display:none">
+    <div class="report-preview" id="report-preview"></div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn-primary" onclick="window.print()">🖨 인쇄 / PDF 저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 보강 일정 ══ -->
+<div class="page" id="page-makeup">
+  <div class="card">
+    <div class="card-title">📚 보강 일정 등록</div>
+    <div style="background:#FFF0F5;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#CC0066;line-height:1.7">
+      보강 날짜와 시간을 입력하면 빈 교실을 자동으로 찾아드립니다.<br>
+      전날·당일 자동 문자 발송은 알리고 설정이 완료된 경우 작동합니다.
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px">
+      <div class="f"><label>보강 날짜 *</label><input type="date" id="mk-date"></div>
+      <div class="f"><label>보강 시간 *</label><input type="text" id="mk-time" placeholder="예: 6:30~8:00" oninput="findEmptyRooms()"></div>
+      <div class="f"><label>해당 반 *</label>
+        <select id="mk-class" onchange="autoFillMakeup()"><option value="">선택</option></select>
+      </div>
+      <div class="f"><label>담임 선생님</label><input type="text" id="mk-teacher" placeholder="자동입력"></div>
+      <div class="f"><label>학생 이름 *</label>
+        <input type="text" id="mk-name" placeholder="이름 입력..." oninput="mkAutoComplete()" autocomplete="off">
+        <div id="mk-suggest" style="position:relative"></div>
+      </div>
+      <div class="f"><label>학부모 연락처</label><input type="tel" id="mk-parent-tel" placeholder="자동입력"></div>
+      <div class="f"><label>학생 연락처</label><input type="tel" id="mk-student-tel" placeholder="자동입력"></div>
+      <div class="f"><label>알림 문자</label>
+        <select id="mk-sms">
+          <option value="Y">전날+당일 발송</option>
+          <option value="day">당일만 발송</option>
+          <option value="N">발송 안 함</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 빈 교실 자동 추천 -->
+    <div id="mk-room-section" style="margin-bottom:12px">
+      <div style="font-size:11px;color:var(--sub);margin-bottom:8px;font-weight:500">🏫 추천 교실 (해당 시간 빈 교실)</div>
+      <div id="mk-room-grid" style="display:flex;flex-wrap:wrap;gap:8px">
+        <div style="font-size:12px;color:#aaa">날짜와 시간을 입력하면 빈 교실이 표시됩니다</div>
+      </div>
+    </div>
+
+    <div class="f" style="margin-bottom:12px">
+      <label>배정 교실 (직접 선택 또는 위에서 클릭)</label>
+      <select id="mk-room">
+        <option value="">미정</option>
+        <optgroup label="3층">
+          <option value="3층 1호실">3층 1호실 (중형)</option>
+          <option value="3층 2호실">3층 2호실 (중형)</option>
+          <option value="3층 3호실">3층 3호실 (대형 14명)</option>
+          <option value="3층 4호실">3층 4호실 (소형 6명)</option>
+          <option value="3층 5호실">3층 5호실 (중형)</option>
+        </optgroup>
+        <optgroup label="5층">
+          <option value="5층 1호실">5층 1호실 (중형)</option>
+          <option value="5층 2호실">5층 2호실 (중형)</option>
+          <option value="5층 3호실">5층 3호실 (대형 14명)</option>
+        </optgroup>
+      </select>
+    </div>
+
+    <div class="f" style="margin-bottom:12px">
+      <label>메모</label>
+      <input type="text" id="mk-note" placeholder="보강 사유, 특이사항 등">
+    </div>
+
+    <!-- 문자 미리보기 -->
+    <div style="background:#FFF0F5;border-radius:10px;padding:12px 14px;margin-bottom:12px">
+      <div style="font-size:11px;color:#CC0066;margin-bottom:6px;font-weight:500">📱 발송될 문자 미리보기</div>
+      <div id="mk-sms-preview" style="font-size:12px;color:#444;line-height:1.8;white-space:pre-line"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" onclick="saveMakeupRecord()">보강 일정 저장</button>
+      <button class="btn-secondary" onclick="clearMakeupForm()">초기화</button>
+    </div>
+    <div id="mk-msg" style="font-size:12px;color:var(--pink);margin-top:8px;height:16px;text-align:center"></div>
+  </div>
+
+  <!-- 보강 일정 목록 -->
+  <div class="card">
+    <div class="card-title">📋 보강 일정 목록</div>
+    <div class="search-bar">
+      <input type="text" id="mk-search" placeholder="이름, 반 검색..." oninput="renderMakeupList()">
+      <input type="date" id="mk-filter-date" onchange="renderMakeupList()">
+      <select id="mk-filter-status" onchange="renderMakeupList()">
+        <option value="">전체</option>
+        <option>예정</option><option>완료</option><option>취소</option>
+      </select>
+    </div>
+    <table class="list-table">
+      <thead><tr>
+        <th>날짜</th><th>시간</th><th>학생명</th><th>반</th><th>교실</th>
+        <th>담임</th><th>학부모번호</th><th>문자</th><th>상태</th><th>메모</th><th>관리</th>
+      </tr></thead>
+      <tbody id="mk-list-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- 교실 현황 -->
+  <div class="card">
+    <div class="card-title">🏫 교실 현황</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <div style="font-size:12px;font-weight:500;color:#1a3a5c;margin-bottom:10px;padding:6px 10px;background:#EEF3F9;border-radius:6px">🏢 3층 (초등부 전용 포함)</div>
+        <div id="room-3f-grid"></div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:500;color:#CC0066;margin-bottom:10px;padding:6px 10px;background:#FFF0F5;border-radius:6px">🏢 5층</div>
+        <div id="room-5f-grid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 시간표 ══ -->
+<div class="page" id="page-timetable">
+
+  <!-- 뷰 전환 -->
+  <div class="card" style="margin-bottom:12px;padding:14px 20px">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button onclick="switchTimetableView('weekly')" class="btn-primary" id="tv-weekly" style="font-size:12px;padding:7px 16px">📅 전체 주간 시간표</button>
+      <button onclick="switchTimetableView('teacher')" class="btn-secondary" id="tv-teacher" style="font-size:12px;padding:7px 16px">👩‍🏫 선생님별 시간표</button>
+      <div style="margin-left:auto;font-size:12px;color:var(--sub)">💡 반 관리 탭에서 담임·수업시간을 입력하면 자동으로 표시됩니다</div>
+    </div>
+  </div>
+
+  <!-- 전체 주간 시간표 (교실 × 요일 형식) -->
+  <div id="tv-weekly-section">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div class="card-title" style="margin-bottom:0">📅 전체 주간 시간표</div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--sub)"><div style="width:10px;height:10px;background:#1D9E75;border-radius:2px"></div>초등</div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--sub)"><div style="width:10px;height:10px;background:#185FA5;border-radius:2px"></div>중등</div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--sub)"><div style="width:10px;height:10px;background:#CC0066;border-radius:2px"></div>고등</div>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;min-width:720px;table-layout:fixed" id="weekly-table">
+          <thead>
+            <tr>
+              <th style="background:#2D4A6E;color:#fff;padding:8px 6px;font-size:11px;width:72px;text-align:center;border:0.5px solid #1a3a5c">시간</th>
+              <th style="background:#3E6B9F;color:#fff;padding:8px 4px;font-size:11px;width:52px;text-align:center;border:0.5px solid #1a3a5c">교실</th>
+              <th style="background:#1a3a5c;color:#fff;padding:8px 4px;font-size:11px;text-align:center;border:0.5px solid #1a3a5c">월</th>
+              <th style="background:#CC0066;color:#fff;padding:8px 4px;font-size:11px;text-align:center;border:0.5px solid #aa0044">화</th>
+              <th style="background:#1D9E75;color:#fff;padding:8px 4px;font-size:11px;text-align:center;border:0.5px solid #0f6e56">수</th>
+              <th style="background:#BA7517;color:#fff;padding:8px 4px;font-size:11px;text-align:center;border:0.5px solid #8a5510">목</th>
+              <th style="background:#185FA5;color:#fff;padding:8px 4px;font-size:11px;text-align:center;border:0.5px solid #0c447c">금</th>
+              <th style="background:#7B1450;color:#fff;padding:8px 4px;font-size:11px;text-align:center;border:0.5px solid #5a0f3a">토</th>
+            </tr>
+          </thead>
+          <tbody id="weekly-tbody"></tbody>
+        </table>
+      </div>
+      <div id="no-time-classes" style="margin-top:14px"></div>
+    </div>
+  </div>
+
+  <!-- 선생님별 시간표 -->
+  <div id="tv-teacher-section" style="display:none">
+    <div class="card">
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
+        <div class="card-title" style="margin-bottom:0">👩‍🏫 선생님별 시간표</div>
+        <select id="teacher-filter" onchange="renderTeacherTimetable()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'Noto Sans KR',sans-serif">
+          <option value="">전체 선생님</option>
+        </select>
+      </div>
+      <div id="teacher-timetable-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 반 관리 ══ -->
+<div class="page" id="page-class-mgmt">
+  <div class="card">
+    <div class="card-title">➕ 새 반 추가</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px;margin-bottom:12px">
+      <div class="f">
+        <label>반 이름 *</label>
+        <input type="text" id="cm-name" placeholder="예: 1-5, 초등 6C, 고3-2">
+      </div>
+      <div class="f">
+        <label>구분</label>
+        <select id="cm-type">
+          <option value="초등">초등</option>
+          <option value="중등" selected>중등</option>
+          <option value="고등">고등</option>
+          <option value="기타">기타</option>
+        </select>
+      </div>
+      <div class="f">
+        <label>정원 (명)</label>
+        <input type="number" id="cm-quota" min="1" max="30" placeholder="예: 9">
+      </div>
+      <div class="f">
+        <label>수업 시간</label>
+        <input type="text" id="cm-time" placeholder="예: 월수금(6-8시)">
+      </div>
+      <div class="f">
+        <label>담임 선생님</label>
+        <input type="text" id="cm-teacher" placeholder="예: 이수진 선생님">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="saveClass()">반 추가</button>
+    </div>
+    <div id="cm-save-msg" style="font-size:12px;color:var(--pink);margin-top:8px;height:16px;text-align:center"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 현재 반 목록</div>
+    <div style="background:#FFF0F5;border-radius:8px;padding:8px 14px;margin-bottom:12px;font-size:12px;color:#CC0066">
+      💡 정원, 수업시간, 담임, 구분은 표에서 직접 수정 가능합니다. 수정 후 다른 곳 클릭하면 자동 저장됩니다.
+      <button onclick="resetClassesToDefault()" style="float:right;padding:4px 12px;background:transparent;border:1px solid #f5b0b0;border-radius:6px;font-size:11px;cursor:pointer;color:#A32D2D;font-family:'Noto Sans KR',sans-serif">🔄 기본값으로 초기화</button>
+    </div>
+    <table class="list-table" id="class-list-table">
+      <thead>
+        <tr>
+          <th style="width:110px">반 이름</th>
+          <th style="width:75px">구분</th>
+          <th style="width:80px">정원</th>
+          <th style="width:130px">담임 선생님</th>
+          <th>수업 시간</th>
+          <th style="width:120px">현재 인원</th>
+          <th style="width:80px">관리</th>
+        </tr>
+      </thead>
+      <tbody id="class-list-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══ 명단 가져오기 ══ -->
+<div class="page" id="page-import">
+  <div class="card">
+    <div class="card-title">📥 메이크에듀 원생 명단 가져오기</div>
+    <div style="background:#FFF0F5;border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:12px;color:#CC0066;line-height:1.8">
+      <b>사용 방법</b><br>
+      1. 메이크에듀 → 원생 관리 → 전체 원생 목록 → 엑셀 내보내기<br>
+      2. 아래에 파일을 끌어다 놓거나 클릭해서 업로드<br>
+      3. 미리보기 확인 후 "전체 가져오기" 클릭<br>
+      ※ 이미 같은 이름+연락처의 학생이 있으면 자동으로 건너뜁니다 (중복 방지)
+    </div>
+
+    <!-- 파일 업로드 영역 -->
+    <div id="import-dropzone" onclick="document.getElementById('import-file').click()"
+      style="border:2px dashed #f5c0d8;border-radius:12px;padding:40px;text-align:center;cursor:pointer;background:#fff8fb;margin-bottom:16px;transition:all 0.2s">
+      <div style="font-size:32px;margin-bottom:8px">📂</div>
+      <div style="font-size:14px;font-weight:500;color:#CC0066;margin-bottom:4px">클릭하거나 파일을 여기에 끌어다 놓으세요</div>
+      <div style="font-size:12px;color:#aaa">메이크에듀에서 내보낸 .xlsx 파일</div>
+    </div>
+    <input type="file" id="import-file" accept=".xlsx" style="display:none" onchange="handleImportFile(this)">
+
+    <!-- 미리보기 -->
+    <div id="import-preview" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div>
+          <span style="font-size:13px;font-weight:500;color:#333" id="import-summary"></span>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-secondary" onclick="cancelImport()">취소</button>
+          <button class="btn-primary" id="import-btn" onclick="doImport()">전체 가져오기</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="list-table" id="import-preview-table">
+          <thead>
+            <tr>
+              <th>상태</th><th>이름</th><th>학교</th><th>학년</th>
+              <th>배정반</th><th>학부모 연락처</th><th>학생 연락처</th><th>입학일</th>
+            </tr>
+          </thead>
+          <tbody id="import-preview-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="import-result" style="display:none;text-align:center;padding:24px">
+      <div style="font-size:40px;margin-bottom:10px">✅</div>
+      <div id="import-result-msg" style="font-size:15px;font-weight:500;color:#CC0066"></div>
+      <div id="import-result-sub" style="font-size:12px;color:#888;margin-top:6px"></div>
+      <button class="btn-primary" style="margin-top:16px" onclick="resetImport()">다시 가져오기</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- 상세/수정 모달 -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-title">학생 상세 정보</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ── 데이터 저장/로드 ──────────────────────────
+const STORE_KEY = 'yujeonglish_students';
+const CLASS_KEY = 'yujeonglish_classes';
+
+function load(){try{return JSON.parse(localStorage.getItem(STORE_KEY)||'[]')}catch{return[]}}
+function save(data){localStorage.setItem(STORE_KEY,JSON.stringify(data))}
+
+// ── 반 데이터 ──────────────────────────
+const DEFAULT_CLASSES = [
+  // 초등부 (3층 전용)
+  {name:'초등 3A', type:'초등',quota:6, time:'월화수목금(2-3)',  teacher:'김승민', room:'3층 1호실'},
+  {name:'초등 4A', type:'초등',quota:6, time:'화수목(3-4:30)',   teacher:'김승민', room:'3층 2호실'},
+  {name:'초등 4B', type:'초등',quota:6, time:'수금(3-4:30)',     teacher:'',       room:'3층 3호실'},
+  {name:'초등 5A', type:'초등',quota:6, time:'화수목금(3-4:30)', teacher:'김승민', room:'3층 2호실'},
+  {name:'초등 5B', type:'초등',quota:6, time:'수목(3-4:30)',     teacher:'김민지', room:'3층 3호실'},
+  {name:'초등 6A', type:'초등',quota:6, time:'월화금(4-6)',      teacher:'김승민', room:'3층 1호실'},
+  {name:'초등 6B', type:'초등',quota:6, time:'화수목(3:30-5)',   teacher:'김민지', room:'3층 4호실'},
+  {name:'초등 6C', type:'초등',quota:9, time:'',                 teacher:'김승민', room:'3층 5호실'},
+  // 중등부
+  {name:'1-1',  type:'중등',quota:9,  time:'월목금(6:30-8)',     teacher:'남예슬', room:'3층 2호실'},
+  {name:'1-2',  type:'중등',quota:9,  time:'화수금(5-6:30)',     teacher:'김민지', room:'3층 3호실'},
+  {name:'1-3',  type:'중등',quota:9,  time:'화수금(6:30-8)',     teacher:'김승민', room:'3층 5호실'},
+  {name:'1-4',  type:'중등',quota:9,  time:'화수금(5-6:30)',     teacher:'장지승', room:'3층 5호실'},
+  {name:'2-1',  type:'중등',quota:9,  time:'월화금(5-6:30)',     teacher:'남예슬', room:'3층 1호실'},
+  {name:'2-2',  type:'중등',quota:9,  time:'화수금(6:30-8)',     teacher:'김민지', room:'3층 3호실'},
+  {name:'2-3',  type:'중등',quota:9,  time:'화목금(6:30-8)',     teacher:'박민성', room:'3층 4호실'},
+  {name:'2-4',  type:'중등',quota:9,  time:'월화목금(6:30-8)',   teacher:'김민지', room:'3층 3호실'},
+  {name:'2-5',  type:'중등',quota:9,  time:'화목금(8-9:30)',     teacher:'박민성', room:'3층 2호실'},
+  {name:'3-1',  type:'중등',quota:9,  time:'월목(5-6:30) 수(6:30-8)', teacher:'남예슬', room:'3층 1호실'},
+  {name:'3-2',  type:'중등',quota:9,  time:'월수(5-6:30) 금(6:30-8)', teacher:'남예슬', room:'3층 1호실'},
+  {name:'3-3',  type:'중등',quota:9,  time:'화수금(8-9:30)',     teacher:'남예슬', room:'3층 3호실'},
+  {name:'3-4',  type:'중등',quota:9,  time:'화목금(5-6:30)',     teacher:'박민성', room:'3층 4호실'},
+  // 고등부
+  {name:'고1',      type:'고등',quota:12, time:'월화목(6:30-8) 월화목(8-9:30)', teacher:'원',    room:'3층 1호실'},
+  {name:'고2',      type:'고등',quota:12, time:'화목(8-9:30)',   teacher:'원',       room:'3층 1호실'},
+  {name:'고1신명경북',type:'고등',quota:12,time:'화목(8-9:30)',  teacher:'홍채린',   room:'5층 1호실'},
+  {name:'고1대달사', type:'고등',quota:12, time:'월화목(6:30-8) 월화목(8-9:30)', teacher:'박민성', room:'3층 4호실'},
+  {name:'고2여채원', type:'고등',quota:12, time:'화목(8-9:30)', teacher:'여채원',   room:'3층 4호실'},
+  {name:'사대부고1', type:'고등',quota:12, time:'',              teacher:'여채원',   room:'3층 4호실'},
+  {name:'경북여고1', type:'고등',quota:12, time:'',              teacher:'홍채린',   room:'5층 1호실'},
+  {name:'신명고1',   type:'고등',quota:12, time:'',              teacher:'홍채린',   room:'5층 1호실'},
+  {name:'제일고1',   type:'고등',quota:12, time:'',              teacher:'홍채린',   room:'5층 1호실'},
+];
+
+function loadClasses(){
+  try{
+    const saved = JSON.parse(localStorage.getItem(CLASS_KEY)||'null');
+    if(!saved) return DEFAULT_CLASSES;
+    // 새로 추가된 기본 반이 있으면 병합
+    const savedNames = saved.map(c=>c.name);
+    const newDefaults = DEFAULT_CLASSES.filter(c=>!savedNames.includes(c.name));
+    // 기존 반에 담임이 없으면 DEFAULT에서 채워줌
+    let updated = false;
+    saved.forEach(c=>{
+      if(!c.teacher){
+        const def = DEFAULT_CLASSES.find(d=>d.name===c.name);
+        if(def&&def.teacher){ c.teacher=def.teacher; updated=true; }
+      }
+    });
+    if(newDefaults.length||updated){
+      const merged = [...saved, ...newDefaults];
+      saveClasses(merged);
+      return merged;
+    }
+    return saved;
+  }catch{return DEFAULT_CLASSES;}
+}
+function saveClasses(data){localStorage.setItem(CLASS_KEY,JSON.stringify(data))}
+
+function getClassQuota(){
+  const obj={};
+  loadClasses().forEach(c=>obj[c.name]=c.quota);
+  return obj;
+}
+function getClassTime(){
+  const obj={};
+  loadClasses().forEach(c=>obj[c.name]=c.time||'');
+  return obj;
+}
+
+// 모든 반 목록 (셀렉트박스용)
+function getClassOptions(){
+  const classes = loadClasses();
+  const groups = {초등:[],중등:[],고등:[],기타:[]};
+  classes.forEach(c=>{
+    (groups[c.type]||groups['기타']).push(c.name);
+  });
+  let html = '<option value="">선택</option>';
+  Object.entries(groups).forEach(([type, names])=>{
+    if(names.length){
+      html += `<optgroup label="${type}">`;
+      names.forEach(n=>html+=`<option>${n}</option>`);
+      html += '</optgroup>';
+    }
+  });
+  return html;
+}
+
+// 모든 반 셀렉트박스 일괄 갱신
+function refreshAllClassSelects(){
+  const html = getClassOptions();
+  ['lt-assigned-class','q-class','search-class','quota-class-filter'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    const cur = el.value;
+    el.innerHTML = html;
+    if(cur) el.value = cur;
+  });
+}
+
+// ── 반 관리 함수 ──────────────────────────
+function saveClass(){
+  const name = document.getElementById('cm-name').value.trim();
+  const quota = parseInt(document.getElementById('cm-quota').value)||9;
+  const type = document.getElementById('cm-type').value;
+  const time = document.getElementById('cm-time').value.trim();
+  const teacher = document.getElementById('cm-teacher').value.trim();
+  if(!name){alert('반 이름을 입력해주세요.');return;}
+  const classes = loadClasses();
+  if(classes.find(c=>c.name===name)){alert('이미 같은 이름의 반이 있습니다.');return;}
+  classes.push({name,type,quota,time,teacher});
+  saveClasses(classes);
+  document.getElementById('cm-name').value='';
+  document.getElementById('cm-quota').value='';
+  document.getElementById('cm-time').value='';
+  document.getElementById('cm-teacher').value='';
+  const msg=document.getElementById('cm-save-msg');
+  msg.textContent=`✓ "${name}" 반이 추가되었습니다!`;
+  setTimeout(()=>msg.textContent='',3000);
+  renderClassList();
+  refreshAllClassSelects();
+}
+
+function deleteClass(name){
+  if(!confirm(`"${name}" 반을 삭제하시겠습니까?\n해당 반에 배정된 학생 정보는 유지됩니다.`))return;
+  saveClasses(loadClasses().filter(c=>c.name!==name));
+  renderClassList();
+  refreshAllClassSelects();
+}
+
+function editClassTime(name){
+  const classes = loadClasses();
+  const cls = classes.find(c=>c.name===name);
+  if(!cls)return;
+  const newTime = prompt(`"${name}" 반의 수업 시간을 입력하세요:`, cls.time||'');
+  if(newTime===null)return;
+  cls.time = newTime;
+  saveClasses(classes);
+  renderClassList();
+}
+
+function editClassQuota(name){
+  const classes = loadClasses();
+  const cls = classes.find(c=>c.name===name);
+  if(!cls)return;
+  const newQ = prompt(`"${name}" 반의 정원을 입력하세요:`, cls.quota||9);
+  if(newQ===null)return;
+  const q = parseInt(newQ);
+  if(isNaN(q)||q<1){alert('올바른 숫자를 입력해주세요.');return;}
+  cls.quota = q;
+  saveClasses(classes);
+  renderClassList();
+  renderQuota();
+}
+
+function renderClassList(){
+  const classes = loadClasses();
+  const data = load();
+  const counts={};
+  data.filter(s=>s.status==='등록완료').forEach(s=>{
+    if(s.assignedClass) counts[s.assignedClass]=(counts[s.assignedClass]||0)+1;
+  });
+  const tbody = document.getElementById('class-list-tbody');
+  if(!tbody)return;
+  tbody.innerHTML = classes.map((c,idx)=>{
+    const cur = counts[c.name]||0;
+    const full = cur>=c.quota;
+    const warn = cur>=c.quota*0.8&&!full;
+    const safeId = c.name.replace(/[^a-zA-Z0-9가-힣]/g,'_');
+    return`<tr id="class-row-${safeId}">
+      <td><b>${c.name}</b></td>
+      <td>
+        <select onchange="updateClassType('${c.name}',this.value)" style="font-size:11px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-family:'Noto Sans KR',sans-serif">
+          <option ${c.type==='초등'?'selected':''}>초등</option>
+          <option ${c.type==='중등'?'selected':''}>중등</option>
+          <option ${c.type==='고등'?'selected':''}>고등</option>
+          <option ${c.type==='기타'?'selected':''}>기타</option>
+        </select>
+      </td>
+      <td>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input type="number" value="${c.quota}" min="1" max="30"
+            style="width:52px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:12px;text-align:center"
+            onchange="updateClassQuota('${c.name}',this.value)">
+          <span style="font-size:11px;color:var(--sub)">명</span>
+        </div>
+      </td>
+      <td>
+        <input type="text" value="${c.teacher||''}" placeholder="선생님 이름"
+          style="width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:4px;font-size:12px"
+          onchange="updateClassTeacher('${c.name}',this.value)">
+      </td>
+      <td>
+        <input type="text" value="${c.time||''}" placeholder="예: 월수금(6-8시)"
+          style="width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:4px;font-size:12px"
+          onchange="updateClassTime('${c.name}',this.value)">
+      </td>
+      <td>
+        <span style="color:${full?'#A32D2D':warn?'#854F0B':'#1A6630'};font-weight:500">${cur}명 ${full?'🚫':warn?'⚠️':'✅'}</span>
+        <div style="margin-top:3px;background:#eee;border-radius:10px;height:4px;overflow:hidden">
+          <div style="width:${Math.min(Math.round(cur/c.quota*100),100)}%;height:100%;background:${full?'#E24B4A':warn?'#BA7517':'#CC0066'};border-radius:10px"></div>
+        </div>
+      </td>
+      <td>
+        <button class="btn-danger" onclick="deleteClass('${c.name}')">삭제</button>
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--sub)">등록된 반이 없습니다</td></tr>';
+}
+
+function updateClassQuota(name, val){
+  const q=parseInt(val);
+  if(isNaN(q)||q<1){alert('올바른 숫자를 입력해주세요.');renderClassList();return;}
+  const classes=loadClasses();
+  const cls=classes.find(c=>c.name===name);
+  if(cls){cls.quota=q;saveClasses(classes);}
+  renderClassList();
+  renderQuota();
+}
+
+function updateClassTime(name, val){
+  const classes=loadClasses();
+  const cls=classes.find(c=>c.name===name);
+  if(cls){cls.time=val;saveClasses(classes);}
+}
+
+function updateClassTeacher(name, val){
+  const classes=loadClasses();
+  const cls=classes.find(c=>c.name===name);
+  if(cls){cls.teacher=val;saveClasses(classes);}
+}
+
+function updateClassType(name, val){
+  const classes=loadClasses();
+  const cls=classes.find(c=>c.name===name);
+  if(cls){cls.type=val;saveClasses(classes);}
+}
+
+function resetClassesToDefault(){
+  if(!confirm('반 목록을 기본값(시간표 파일 기준)으로 초기화하시겠습니까?\n⚠️ 직접 수정한 내용이 사라집니다.')) return;
+  saveClasses(DEFAULT_CLASSES.map(c=>({...c})));
+  renderClassList();
+  refreshAllClassSelects();
+  refreshWordTestClassSelects();
+  const msg=document.getElementById('cm-save-msg');
+  if(msg){msg.textContent='✓ 기본값으로 초기화 완료!';setTimeout(()=>msg.textContent='',3000);}
+}
+
+// ── 유틸 ──────────────────────────
+function today(){return new Date().toISOString().slice(0,10)}
+function fmt(d){return d?d.replace(/-/g,'.'):'—'}
+function getChecked(name){return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(e=>e.value).join(', ')}
+function gradeLabel(s){if(s>=90)return{l:'A+',c:'#CC0066'};if(s>=80)return{l:'A',c:'#CC0066'};if(s>=70)return{l:'B+',c:'#185FA5'};if(s>=60)return{l:'B',c:'#185FA5'};if(s>=50)return{l:'C',c:'#9a6200'};return{l:'D',c:'#a03018'}}
+function levelLabel(s){if(s>=90)return['Advanced','최상급'];if(s>=75)return['Upper-Int','중상급'];if(s>=60)return['Intermediate','중급'];if(s>=45)return['Lower-Int','초중급'];return['Beginner','기초']}
+function recLabel(avg){if(avg>=90)return['Advanced반','심화 문법과 고급 독해 중심의 최상위 레벨 수업을 권장합니다.'];if(avg>=75)return['Upper-Intermediate반','실용 회화와 독해 능력 강화에 집중하는 중상급 수업을 권장합니다.'];if(avg>=60)return['Intermediate반','기초 문법 완성과 어휘력 확장에 집중하는 중급 수업을 권장합니다.'];if(avg>=45)return['Lower-Intermediate반','기초 문법과 필수 어휘 학습을 진행하는 초중급 수업을 권장합니다.'];return['Beginner반','알파벳부터 기초 문법까지 탄탄하게 다지는 기초 수업을 권장합니다.']}
+function statusBadge(s){const map={'등록완료':'badge-registered','등록예정':'badge-pending','청강예정':'badge-trial','콜백예정':'badge-callback','상담완료':'badge-cancel','미등록':'badge-cancel'};return`<span class="badge ${map[s]||'badge-cancel'}">${s}</span>`}
+
+// ── 페이지 전환 ──────────────────────────
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  event.target.classList.add('active');
+  if(id==='today')renderToday();
+  if(id==='prospective'){renderProspectiveList();refreshPSClassSelect();}
+  if(id==='student-list')renderList();
+  if(id==='quota')renderQuota();
+  if(id==='timetable'){renderWeeklyTimetable();}
+  if(id==='makeup'){renderMakeupList();renderRoomStatus();refreshMakeupClassSelect();}
+  if(id==='class-mgmt')renderClassList();
+  if(id==='import'){resetImport();}
+  if(id==='word-test'){renderWordTestList();refreshWordTestClassSelects();}
+  if(id==='retest-schedule'){renderRetestList();refreshRetestClassSelect();loadAligoToForm();}
+  if(id==='word-dashboard'){renderWordDashboard();refreshWordDashClassSelects();}
+  if(id==='level-test'){renderLT2List();refreshLT2ClassSelects();}
+  if(id==='consult-log'){renderConsultLog();}
+  if(id==='report')renderReportList();
+}
+
+// ── 오늘 현황 ──────────────────────────
+function renderToday(){
+  const data=load();
+  const t=today();
+  const callbacks=data.filter(s=>s.callbackDate===t);
+  const trials=data.filter(s=>s.trialDate===t);
+  const registers=data.filter(s=>s.regDate===t);
+  document.getElementById('today-callback').textContent=callbacks.length;
+  document.getElementById('today-trial').textContent=trials.length;
+  document.getElementById('today-register').textContent=registers.length;
+  document.getElementById('today-callback-list').innerHTML=callbacks.map(s=>`<div>${s.name} (${s.assignedClass||'반미정'})</div>`).join('')||'없음';
+  document.getElementById('today-trial-list').innerHTML=trials.map(s=>`<div>${s.name} ${s.trialTime||''}</div>`).join('')||'없음';
+  document.getElementById('today-register-list').innerHTML=registers.map(s=>`<div>${s.name} (${s.assignedClass||'반미정'})</div>`).join('')||'없음';
+
+  // 오늘 재시 일정
+  const retests=loadRS().filter(r=>r.date===t&&r.status==='예정');
+  document.getElementById('today-retest').textContent=retests.length;
+  document.getElementById('today-retest-list').innerHTML=retests.map(r=>`<div>${r.name} (${r.type})</div>`).join('')||'없음';
+
+  // ── 오늘 시간표 ──
+  renderTodayTimetable();
+
+  // 정원 임박
+  const CLASS_QUOTA=getClassQuota();
+  const counts={};
+  data.filter(s=>s.status==='등록완료').forEach(s=>{if(s.assignedClass)counts[s.assignedClass]=(counts[s.assignedClass]||0)+1});
+  const warnGrid=document.getElementById('quota-warning-grid');
+  const warns=Object.entries(CLASS_QUOTA).filter(([cls,max])=>{const cur=counts[cls]||0;return cur>=max*0.7}).sort((a,b)=>{const ca=counts[a[0]]||0,cb=counts[b[0]]||0;return(cb/b[1])-(ca/a[1])});
+  warnGrid.innerHTML=warns.length?warns.map(([cls,max])=>{const cur=counts[cls]||0;const pct=Math.round(cur/max*100);const full=cur>=max;return`<div class="quota-card ${full?'quota-full':cur>=max*0.8?'quota-warn':''}"><div class="quota-name">${cls} ${full?'🚫 정원마감':''}</div><div class="quota-bar-wrap"><div class="quota-bar" style="width:${pct}%;background:${full?'#E24B4A':cur>=max*0.8?'#BA7517':'#CC0066'}"></div></div><div class="quota-info"><span>${cur}/${max}명</span><span>${pct}%</span></div></div>`}).join(''):'<div style="color:var(--sub);font-size:12px;padding:8px">정원 임박 반 없음 ✓</div>';
+  // 최근 상담
+  const recent=data.slice().sort((a,b)=>b.consultDate?.localeCompare(a.consultDate||'')||0).slice(0,10);
+  const tbody=document.getElementById('recent-tbody');
+  tbody.innerHTML=recent.length?recent.map(s=>`<tr>
+    <td>${fmt(s.consultDate)}</td><td><b>${s.name}</b></td><td>${s.school||''} ${s.grade||''}</td>
+    <td>${s.assignedClass||'—'}</td><td>${fmt(s.callbackDate)}</td><td>${fmt(s.trialDate)}</td>
+    <td style="${s.regDate===t?'color:var(--pink);font-weight:500':''}">${fmt(s.regDate)}</td>
+    <td>${statusBadge(s.status)}</td>
+    <td><button class="btn-pink-sm" onclick="openDetail('${s.id}')">상세</button></td>
+  </tr>`).join(''):'<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--sub)">상담 기록이 없습니다</td></tr>';
+}
+
+// ── 저장 ──────────────────────────
+function saveConsult(){
+  const name=document.getElementById('c-name').value.trim();
+  if(!name){alert('학생 성명은 필수입니다.');return;}
+  const data=load();
+  const id='s_'+Date.now();
+  const student={
+    id,
+    name,
+    school:document.getElementById('c-school').value,
+    grade:document.getElementById('c-grade').value,
+    track:document.getElementById('c-track').value,
+    parent:document.getElementById('c-parent').value,
+    parentTel:document.getElementById('c-parent-tel').value,
+    studentTel:document.getElementById('c-student-tel').value,
+    regType:document.getElementById('c-regtype').value,
+    visitRoute:getChecked('visit'),
+    targetGrade:document.getElementById('c-target-grade').value,
+    univ:document.getElementById('c-univ').value,
+    major:document.getElementById('c-major').value,
+    studyForm:getChecked('study'),
+    weakArea:getChecked('weak'),
+    worries:getChecked('worry'),
+    grades:{
+      m1:{mid:document.getElementById('g-m1-mid').value,fin:document.getElementById('g-m1-fin').value,mock:document.getElementById('g-m1-mock').value,math:document.getElementById('g-m1-math').value},
+      m2:{mid:document.getElementById('g-m2-mid').value,fin:document.getElementById('g-m2-fin').value,mock:document.getElementById('g-m2-mock').value,math:document.getElementById('g-m2-math').value},
+      m3:{mid:document.getElementById('g-m3-mid').value,fin:document.getElementById('g-m3-fin').value,mock:document.getElementById('g-m3-mock').value,math:document.getElementById('g-m3-math').value},
+      h1:{mid:document.getElementById('g-h1-mid').value,fin:document.getElementById('g-h1-fin').value,mock:document.getElementById('g-h1-mock').value,math:document.getElementById('g-h1-math').value},
+    },
+    ltListening:document.getElementById('lt-listening').value,
+    ltReading:document.getElementById('lt-reading').value,
+    ltWriting:document.getElementById('lt-writing').value,
+    ltSpeaking:document.getElementById('lt-speaking').value,
+    assignedClass:document.getElementById('lt-assigned-class').value,
+    teacher:document.getElementById('lt-teacher').value,
+    consultDate:document.getElementById('c-consult-date').value,
+    callbackDate:document.getElementById('c-callback-date').value,
+    trialDate:document.getElementById('c-trial-date').value,
+    trialTime:document.getElementById('c-trial-time').value,
+    regDate:document.getElementById('c-reg-date').value,
+    status:document.getElementById('c-status').value,
+    note:document.getElementById('c-note').value,
+  };
+  data.push(student);
+  save(data);
+  const msg=document.getElementById('save-msg');
+  msg.textContent=`✓ ${name} 학생 저장 완료!`;
+  setTimeout(()=>msg.textContent='',3000);
+  clearForm();
+}
+
+function clearForm(){
+  ['c-name','c-school','c-parent','c-parent-tel','c-student-tel','c-target-grade','c-univ','c-major',
+   'lt-listening','lt-reading','lt-writing','lt-speaking','lt-teacher','c-trial-time','c-note'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  ['c-grade','c-track','c-regtype','lt-assigned-class','c-status'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.selectedIndex=0;
+  });
+  document.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.checked=false);
+  ['g-m1-mid','g-m1-fin','g-m1-mock','g-m1-math','g-m2-mid','g-m2-fin','g-m2-mock','g-m2-math',
+   'g-m3-mid','g-m3-fin','g-m3-mock','g-m3-math','g-h1-mid','g-h1-fin','g-h1-mock','g-h1-math',
+   'c-consult-date','c-callback-date','c-trial-date','c-reg-date'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  document.getElementById('c-consult-date').value=today();
+}
+
+// ── 학생 목록 ──────────────────────────
+function renderList(){
+  const data=load();
+  const q=(document.getElementById('search-input').value||'').toLowerCase();
+  const st=document.getElementById('search-status').value;
+  const cls=document.getElementById('search-class').value;
+  const filtered=data.filter(s=>{
+    const match=!q||(s.name||'').toLowerCase().includes(q)||(s.school||'').toLowerCase().includes(q)||(s.parentTel||'').includes(q);
+    const statusOk=!st||s.status===st;
+    const clsOk=!cls||s.assignedClass===cls;
+    return match&&statusOk&&clsOk;
+  }).sort((a,b)=>b.consultDate?.localeCompare(a.consultDate||'')||0);
+  const tbody=document.getElementById('student-tbody');
+  const empty=document.getElementById('list-empty');
+  if(!filtered.length){tbody.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  const L=s=>parseInt(s.ltListening)||0,R=s=>parseInt(s.ltReading)||0,W=s=>parseInt(s.ltWriting)||0,Sp=s=>parseInt(s.ltSpeaking)||0;
+  tbody.innerHTML=filtered.map(s=>{
+    const avg=Math.round((L(s)+R(s)+W(s)+Sp(s))/4);
+    return`<tr>
+      <td>${fmt(s.consultDate)}</td>
+      <td><b>${s.name}</b></td>
+      <td>${s.school||''} ${s.grade||''}</td>
+      <td>${s.parentTel||'—'}</td>
+      <td>${s.assignedClass||'—'}</td>
+      <td>${avg?avg+'점':'—'}</td>
+      <td>${fmt(s.callbackDate)}</td>
+      <td>${fmt(s.regDate)}</td>
+      <td>${statusBadge(s.status)}</td>
+      <td style="display:flex;gap:4px">
+        <button class="btn-pink-sm" onclick="openDetail('${s.id}')">상세</button>
+        <button class="btn-danger" onclick="deleteStudent('${s.id}')">삭제</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function deleteStudent(id){
+  if(!confirm('정말 삭제하시겠습니까?'))return;
+  save(load().filter(s=>s.id!==id));
+  renderList();
+}
+
+// ── 반별 정원 ──────────────────────────
+// ── 학교명 정규화 매핑 ──────────────────────────
+const SCHOOL_MAP = {
+  // 성명여중
+  '성명':'성명여중','성명여자중학교':'성명여중','성명여자 중학교':'성명여중',
+  '대구 성명여자중학교':'성명여중',
+  // 계성중
+  '계성중학교':'계성중',
+  // 경구중
+  '경구중학교':'경구중','대구경구중학교':'경구중',
+  // 사대부
+  '사대부중학교':'사대부중','사대부고등학교':'사대부고','사대부초등학교':'사대부초',
+  '경대사대부설고등학교':'사대부고','경북대학교사대부설고등학교':'사대부고',
+  // 남산초
+  '남산':'남산초','남산초등학교':'남산초','대구 남산 초등학교':'남산초',
+  '대구남산초등학교':'남산초',
+  // 경북여고
+  '경북여자고등학교':'경북여고','경북여고 ':'경북여고',
+  // 신명고
+  '신명고등학교':'신명고',
+  // 달성고
+  '달성고등학교':'달성고',
+  // 경일중
+  '경일중학교':'경일중',
+  // 평리중
+  '평리중학교':'평리중',
+  // 내당초
+  '내당초등학교':'내당초','대구내당초등학교':'내당초',
+};
+
+function normalizeSchool(raw){
+  if(!raw) return '미입력';
+  const s = raw.trim();
+  return SCHOOL_MAP[s] || s;
+}
+
+let quotaTypeFilter = '';
+function filterQuotaType(type){
+  quotaTypeFilter = type;
+  ['all','초등','중등','고등'].forEach(t=>{
+    const btn=document.getElementById('qf-'+(t==='all'?'all':t));
+    if(!btn)return;
+    btn.className=(type===t||(type===''&&t==='all'))?'btn-pink-sm':'btn-secondary';
+    if(t!=='all')btn.style.cssText='padding:5px 12px;font-size:12px;border-radius:6px';
+  });
+  renderQuota();
+}
+
+function renderQuota(){
+  const data=load();
+  const classes=loadClasses();
+  const CLASS_TIME=getClassTime();
+  const counts={};
+  data.filter(s=>s.status==='등록완료').forEach(s=>{
+    if(s.assignedClass)counts[s.assignedClass]=(counts[s.assignedClass]||0)+1;
+  });
+  const filtered=quotaTypeFilter?classes.filter(c=>c.type===quotaTypeFilter):classes;
+  const grid=document.getElementById('quota-full-grid');
+  grid.innerHTML=filtered.map(({name:cls,quota:max,type})=>{
+    const cur=counts[cls]||0;
+    const pct=Math.round(cur/max*100);
+    const full=cur>=max;
+    const warn=cur>=max*0.8&&!full;
+    return`<div class="quota-card ${full?'quota-full':warn?'quota-warn':''}"
+      onclick="showQuotaDetail('${cls}')"
+      style="cursor:pointer;transition:transform 0.15s"
+      onmouseover="this.style.transform='scale(1.03)'"
+      onmouseout="this.style.transform='scale(1)'">
+      <div class="quota-name">${cls}${full?' 🚫':''}</div>
+      <div style="font-size:10px;color:var(--sub);margin-bottom:5px">${CLASS_TIME[cls]||type}</div>
+      <div class="quota-bar-wrap"><div class="quota-bar" style="width:${pct}%;background:${full?'#E24B4A':warn?'#BA7517':'#CC0066'}"></div></div>
+      <div class="quota-info"><span>${cur}/${max}명</span><span>${pct}%</span></div>
+    </div>`;
+  }).join('');
+  renderQuotaStats();
+}
+
+function showQuotaDetail(cls){
+  const data=load().filter(s=>s.assignedClass===cls&&s.status==='등록완료');
+  const quota=getClassQuota()[cls]||9;
+  document.getElementById('quota-detail-title').textContent=`${cls} 학생 명단 (${data.length}/${quota}명)`;
+
+  // 학교별 분포 (정규화 적용)
+  const schoolCount={};
+  data.forEach(s=>{
+    const sc=normalizeSchool(s.school);
+    schoolCount[sc]=(schoolCount[sc]||0)+1;
+  });
+  const colors=['#FFF0F5','#E8F4FD','#F0FDF4','#FFF8E8','#FAE1EF','#EEF3F9','#FDF5FF'];
+  document.getElementById('quota-school-dist').innerHTML=
+    Object.entries(schoolCount).sort((a,b)=>b[1]-a[1])
+      .map(([school,cnt],i)=>
+        `<span style="background:${colors[i%colors.length]};padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500;color:#333">${school} ${cnt}명</span>`
+      ).join('');
+
+  // 학생 목록 (학교별 → 이름순 정렬)
+  const sorted=[...data].sort((a,b)=>{
+    const sa=normalizeSchool(a.school), sb=normalizeSchool(b.school);
+    return sa.localeCompare(sb)||a.name.localeCompare(b.name);
+  });
+  document.getElementById('quota-detail-tbody').innerHTML=sorted.length?
+    sorted.map(s=>`<tr>
+      <td><b>${s.name}</b></td>
+      <td style="font-size:11px">${normalizeSchool(s.school)}</td>
+      <td style="font-size:11px">${s.grade||'—'}</td>
+      <td style="font-size:11px">${s.parentTel||'—'}</td>
+    </tr>`).join(''):
+    '<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--sub)">등록 완료 학생 없음</td></tr>';
+
+  document.getElementById('quota-detail-card').style.display='block';
+}
+
+function renderQuotaStats(){
+  const type=document.getElementById('quota-stat-type')?.value||'grade';
+  const data=load().filter(s=>s.status==='등록완료');
+  const total=data.length;
+  const colors=['#CC0066','#FF1493','#e06090','#1a3a5c','#185FA5','#1D9E75','#BA7517','#854F0B','#7B1450','#2E7D32'];
+
+  if(type==='grade_school'){
+    // 학년+학교 교차 통계
+    const matrix={};
+    data.forEach(s=>{
+      const g=s.grade||'미입력';
+      const sc=normalizeSchool(s.school);
+      if(!matrix[g])matrix[g]={};
+      matrix[g][sc]=(matrix[g][sc]||0)+1;
+    });
+    // 학년 순서 정렬
+    const gradeOrder=['초3','초4','초5','초6','중1','중2','중3','고1','고2','고3','미입력'];
+    const grades=Object.keys(matrix).sort((a,b)=>{
+      const ai=gradeOrder.indexOf(a),bi=gradeOrder.indexOf(b);
+      return (ai>=0?ai:99)-(bi>=0?bi:99);
+    });
+    document.getElementById('quota-stats-grid').innerHTML=grades.map((g,gi)=>{
+      const schools=Object.entries(matrix[g]).sort((a,b)=>b[1]-a[1]);
+      const gradeTotal=schools.reduce((s,[,c])=>s+c,0);
+      return`<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px;grid-column:span 1">
+        <div style="font-size:12px;font-weight:500;color:${colors[gi%colors.length]};margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #f0f0f0">
+          ${g} <span style="font-weight:300;font-size:11px">총 ${gradeTotal}명</span>
+        </div>
+        ${schools.map(([sc,cnt])=>`
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+            <span style="font-size:11px;color:#555">${sc}</span>
+            <span style="font-size:12px;font-weight:500;color:${colors[gi%colors.length]}">${cnt}명</span>
+          </div>
+          <div style="background:#f0f0f0;border-radius:4px;height:3px;margin-bottom:4px;overflow:hidden">
+            <div style="width:${Math.round(cnt/gradeTotal*100)}%;height:100%;background:${colors[gi%colors.length]};border-radius:4px"></div>
+          </div>`).join('')}
+      </div>`;
+    }).join('')||'<div style="color:var(--sub);font-size:12px;padding:8px">등록 완료 학생 없음</div>';
+
+  } else {
+    // 학년별 또는 학교별
+    const counts={};
+    data.forEach(s=>{
+      const key = type==='grade' ? (s.grade||'미입력') : normalizeSchool(s.school);
+      counts[key]=(counts[key]||0)+1;
+    });
+    const gradeOrder=['초3','초4','초5','초6','중1','중2','중3','고1','고2','고3','미입력'];
+    const sorted=Object.entries(counts).sort((a,b)=>{
+      if(type==='grade'){
+        const ai=gradeOrder.indexOf(a[0]),bi=gradeOrder.indexOf(b[0]);
+        return (ai>=0?ai:99)-(bi>=0?bi:99);
+      }
+      return b[1]-a[1];
+    });
+    document.getElementById('quota-stats-grid').innerHTML=sorted.map(([key,cnt],i)=>`
+      <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:11px;color:var(--sub);margin-bottom:4px">${key}</div>
+        <div style="font-size:20px;font-weight:500;color:${colors[i%colors.length]}">${cnt}명</div>
+        <div style="font-size:10px;color:#aaa;margin-top:2px">${Math.round(cnt/total*100)}%</div>
+        <div style="margin-top:6px;background:#f0f0f0;border-radius:10px;height:4px;overflow:hidden">
+          <div style="width:${Math.round(cnt/sorted[0][1]*100)}%;height:100%;background:${colors[i%colors.length]};border-radius:10px"></div>
+        </div>
+      </div>`).join('')||'<div style="color:var(--sub);font-size:12px;padding:8px">등록 완료 학생 없음</div>';
+  }
+}
+
+function renderQuotaStudents(){
+  const cls=document.getElementById('quota-class-filter')?.value;
+  if(!cls)return;
+  showQuotaDetail(cls);
+}
+
+// ── 성적표 목록 ──────────────────────────
+function renderReportList(){
+  const q=(document.getElementById('report-search').value||'').toLowerCase();
+  const data=load().filter(s=>s.ltListening||s.ltReading||s.ltWriting||s.ltSpeaking).filter(s=>!q||(s.name||'').toLowerCase().includes(q));
+  const tbody=document.getElementById('report-tbody');
+  tbody.innerHTML=data.length?data.map(s=>{
+    const L=parseInt(s.ltListening)||0,R=parseInt(s.ltReading)||0,W=parseInt(s.ltWriting)||0,Sp=parseInt(s.ltSpeaking)||0;
+    const avg=Math.round((L+R+W+Sp)/4);
+    return`<tr>
+      <td><b>${s.name}</b></td><td>${s.grade||'—'}</td><td>${s.assignedClass||'—'}</td>
+      <td>${avg}점 (${levelLabel(avg)[0]})</td><td>${fmt(s.consultDate)}</td>
+      <td><button class="btn-pink-sm" onclick="showReport('${s.id}')">성적표 보기</button></td>
+    </tr>`;
+  }).join(''):'<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--sub)">레벨테스트 점수가 입력된 학생이 없습니다</td></tr>';
+}
+
+function showReport(id){
+  const s=load().find(x=>x.id===id);if(!s)return;
+  const L=parseInt(s.ltListening)||0,R=parseInt(s.ltReading)||0,W=parseInt(s.ltWriting)||0,Sp=parseInt(s.ltSpeaking)||0;
+  const sum=L+R+W+Sp,avg=Math.round(sum/4);
+  const gL=gradeLabel(L),gR=gradeLabel(R),gW=gradeLabel(W),gS=gradeLabel(Sp);
+  const lv=levelLabel(avg),rec=recLabel(avg);
+  const areas=[['듣기',L,'#CC0066'],['읽기',R,'#FF1493'],['쓰기',W,'#e06090'],['말하기',Sp,'#FFB6C1']];
+  document.getElementById('report-area').style.display='block';
+  document.getElementById('report-preview').innerHTML=`
+  <div class="rp-header">
+    <div class="rp-logo-row">
+      <div class="logo-books"><div class="b-l"></div><div class="b-s"></div><div class="b-r"></div><div class="b-dot"></div></div>
+      <div><div class="rp-logo-kr">이유정영어학원</div><div class="rp-logo-en">Yujeonglish</div></div>
+    </div>
+    <div class="rp-title">Level Test Report</div>
+    <div class="rp-chips">
+      <div class="rp-chip"><div class="rp-chip-label">학생</div><div class="rp-chip-val">${s.name}</div></div>
+      <div class="rp-chip"><div class="rp-chip-label">학교/학년</div><div class="rp-chip-val">${s.school||''} ${s.grade||''}</div></div>
+      <div class="rp-chip"><div class="rp-chip-label">배정반</div><div class="rp-chip-val">${s.assignedClass||'—'}</div></div>
+      <div class="rp-chip"><div class="rp-chip-label">시험일</div><div class="rp-chip-val">${fmt(s.consultDate)}</div></div>
+    </div>
+  </div>
+  <div class="rp-body">
+    <div class="rp-sec">영역별 점수</div>
+    <div class="rp-score-grid">
+      ${areas.map(([nm,sc,cl])=>{const g=gradeLabel(sc);return`<div class="rp-score-card"><div class="rp-domain">${nm}</div><div class="rp-val">${sc}</div><div style="font-size:10px;color:#ccc">/ 100</div><div class="rp-grade" style="background:#FFF0F5;color:${g.c}">${g.l}</div></div>`}).join('')}
+    </div>
+    <div class="rp-summary">
+      <div class="rp-sum-card"><div class="rp-sum-label">총점</div><div class="rp-sum-val">${sum}<span style="font-size:12px;color:#e088b4"> / 400</span></div></div>
+      <div class="rp-sum-card"><div class="rp-sum-label">평균</div><div class="rp-sum-val">${avg}점</div></div>
+      <div class="rp-sum-card"><div class="rp-sum-label">추천 레벨</div><div class="rp-sum-val" style="font-size:14px;padding-top:3px">${lv[0]}</div></div>
+    </div>
+    <div class="rp-sec">영역별 분석</div>
+    ${areas.map(([nm,sc,cl])=>`<div class="rp-bar-row"><div class="rp-bar-meta"><span class="rp-bar-name">${nm}</span><span class="rp-bar-score">${sc}점</span></div><div class="rp-bar-track"><div class="rp-bar-fill" style="width:${sc}%;background:${cl}"></div></div></div>`).join('')}
+    <br>
+    <div class="rp-sec">강사 코멘트</div>
+    <div class="rp-comment"><div class="rp-comment-text">${s.note||'코멘트가 없습니다.'}</div><div style="font-size:11px;color:var(--pink);text-align:right;margin-top:6px">— ${s.teacher||'담당 강사'}</div></div>
+    <div class="rp-sec">추천 반 배정</div>
+    <div class="rp-rec"><div class="rp-rec-class">${s.assignedClass||rec[0]}</div><div class="rp-rec-desc">${rec[1]}</div></div>
+  </div>
+  <div class="rp-footer"><div class="rp-footer-info">${fmt(s.consultDate)} | 담당: ${s.teacher||'담당 강사'} | 이유정영어학원 Yujeonglish</div></div>`;
+  document.getElementById('report-area').scrollIntoView({behavior:'smooth'});
+}
+
+// ── 상세 모달 ──────────────────────────
+function openDetail(id){
+  const s=load().find(x=>x.id===id);if(!s)return;
+  document.getElementById('modal-title').textContent=s.name+' 학생 상세 정보';
+  const L=parseInt(s.ltListening)||0,R=parseInt(s.ltReading)||0,W=parseInt(s.ltWriting)||0,Sp=parseInt(s.ltSpeaking)||0;
+  const avg=Math.round((L+R+W+Sp)/4);
+  document.getElementById('modal-body').innerHTML=`
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+    <div><div style="font-size:10px;color:var(--sub);margin-bottom:12px;letter-spacing:1px">기본 정보</div>
+      ${[['학생',s.name],['학교/학년',(s.school||'')+(s.grade||'')],['학부모',s.parent||'—'],['학부모연락처',s.parentTel||'—'],['학생연락처',s.studentTel||'—'],['방문계기',s.visitRoute||'—']].map(([l,v])=>`<div style="display:flex;gap:8px;margin-bottom:6px;font-size:12px"><span style="color:var(--sub);width:80px;flex-shrink:0">${l}</span><span>${v}</span></div>`).join('')}
+    </div>
+    <div><div style="font-size:10px;color:var(--sub);margin-bottom:12px;letter-spacing:1px">등록 현황</div>
+      ${[['상담일',fmt(s.consultDate)],['배정반',s.assignedClass||'—'],['콜백예정',fmt(s.callbackDate)],['청강예정',fmt(s.trialDate)+' '+( s.trialTime||'')],['등록예정',fmt(s.regDate)],['상태',s.status]].map(([l,v])=>`<div style="display:flex;gap:8px;margin-bottom:6px;font-size:12px"><span style="color:var(--sub);width:80px;flex-shrink:0">${l}</span><span>${v}</span></div>`).join('')}
+    </div>
+  </div>
+  ${(s.ltListening||s.ltReading)?`<div style="margin-bottom:16px"><div style="font-size:10px;color:var(--sub);margin-bottom:8px;letter-spacing:1px">레벨테스트 점수</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+    ${[['듣기',L],['읽기',R],['쓰기',W],['말하기',Sp]].map(([nm,sc])=>`<div style="background:#FFF0F5;border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--sub)">${nm}</div><div style="font-size:20px;font-weight:300;color:var(--pink)">${sc}</div></div>`).join('')}
+  </div>
+  <div style="text-align:center;margin-top:8px;font-size:12px;color:var(--sub)">평균 ${avg}점 · ${levelLabel(avg)[0]}</div></div>`:''}
+  ${s.weakArea?`<div style="margin-bottom:10px;font-size:12px"><span style="color:var(--sub)">취약영역: </span>${s.weakArea}</div>`:''}
+  ${s.note?`<div style="background:#f9f9f9;border-radius:8px;padding:12px;font-size:12px;color:#444;line-height:1.7;margin-bottom:12px">${s.note}</div>`:''}
+  <div style="display:flex;gap:8px;margin-top:8px">
+    <select id="modal-status" style="flex:1;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:'Noto Sans KR',sans-serif">
+      ${['상담완료','콜백예정','청강예정','등록예정','등록완료','미등록'].map(st=>`<option ${s.status===st?'selected':''}>${st}</option>`).join('')}
+    </select>
+    <button class="btn-primary" style="padding:8px 16px;font-size:12px" onclick="updateStatus('${s.id}')">상태 변경</button>
+  </div>`;
+  document.getElementById('detail-modal').classList.add('show');
+}
+
+function updateStatus(id){
+  const data=load();
+  const idx=data.findIndex(s=>s.id===id);
+  if(idx<0)return;
+  data[idx].status=document.getElementById('modal-status').value;
+  save(data);
+  closeModal();
+  renderToday();
+}
+
+function closeModal(){document.getElementById('detail-modal').classList.remove('show')}
+document.getElementById('detail-modal').addEventListener('click',function(e){if(e.target===this)closeModal()})
+
+// ── 시작 팝업 ──────────────────────────
+function showStartupPopup(){
+  const lastDate = localStorage.getItem('yujeonglish_last_open')||'';
+  const t = today();
+  // 오늘 이미 닫은 경우 표시 안 함
+  if(lastDate === t) return;
+  document.getElementById('startup-modal').classList.add('show');
+}
+
+function closeStartupPopup(){
+  localStorage.setItem('yujeonglish_last_open', today());
+  document.getElementById('startup-modal').classList.remove('show');
+}
+
+function saveQuickStudent(){
+  const name = document.getElementById('q-name').value.trim();
+  if(!name){alert('학생 이름을 입력해주세요.');return;}
+  const data = load();
+  const student = {
+    id: 's_'+Date.now(),
+    name,
+    school: document.getElementById('q-school').value,
+    grade: document.getElementById('q-grade').value,
+    parentTel: document.getElementById('q-parent-tel').value,
+    studentTel: document.getElementById('q-student-tel').value,
+    assignedClass: document.getElementById('q-class').value,
+    status: '등록완료',
+    consultDate: today(),
+    regDate: today(),
+    note: document.getElementById('q-note').value,
+  };
+  data.push(student);
+  save(data);
+  // 입력 초기화
+  ['q-name','q-school','q-parent-tel','q-student-tel','q-note'].forEach(id=>{
+    document.getElementById(id).value='';
+  });
+  document.getElementById('q-grade').selectedIndex=0;
+  document.getElementById('q-class').selectedIndex=0;
+  // 완료 메시지
+  const msg = document.getElementById('q-save-msg');
+  msg.textContent = `✓ ${name} 학생 저장 완료! 추가 입력하시거나 닫기를 눌러주세요.`;
+  setTimeout(()=>msg.textContent='',3000);
+  renderToday();
+}
+
+// ── 레벨테스트 입력 ──────────────────────────
+const LT2_KEY = 'yujeonglish_lt2';
+function loadLT2(){try{return JSON.parse(localStorage.getItem(LT2_KEY)||'[]')}catch{return[]}}
+function saveLT2Data(d){localStorage.setItem(LT2_KEY,JSON.stringify(d))}
+
+function refreshLT2ClassSelects(){
+  const html = getClassOptions();
+  ['lt2-class','lt2-search-class'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const cur=el.value;
+    el.innerHTML = id.includes('search')
+      ? '<option value="">전체 반</option>'+html.replace('<option value="">선택</option>','')
+      : html;
+    if(cur)el.value=cur;
+  });
+}
+
+function lt2AutoComplete(){
+  const q=document.getElementById('lt2-name').value.trim().toLowerCase();
+  const box=document.getElementById('lt2-suggest');
+  if(!q){box.innerHTML='';return;}
+  const students=load().filter(s=>s.name.toLowerCase().includes(q)).slice(0,6);
+  if(!students.length){box.innerHTML='';return;}
+  box.innerHTML=`<div style="position:absolute;z-index:50;background:#fff;border:1px solid var(--border);border-radius:8px;width:100%;box-shadow:0 4px 12px rgba(0,0,0,0.1);max-height:180px;overflow-y:auto">
+    ${students.map(s=>`<div onclick="lt2SelectStudent('${s.id}')" style="padding:8px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid #f5f5f5;display:flex;justify-content:space-between" onmouseover="this.style.background='#FFF0F5'" onmouseout="this.style.background='#fff'">
+      <b>${s.name}</b><span style="color:var(--sub)">${s.assignedClass||''} · ${s.grade||''}</span>
+    </div>`).join('')}
+  </div>`;
+}
+
+function lt2SelectStudent(id){
+  const s=load().find(x=>x.id===id);
+  if(!s)return;
+  document.getElementById('lt2-name').value=s.name;
+  document.getElementById('lt2-class').value=s.assignedClass||'';
+  document.getElementById('lt2-teacher').value=s.teacher||'';
+  document.getElementById('lt2-suggest').innerHTML='';
+}
+
+function lt2Calc(){
+  const L=parseInt(document.getElementById('lt2-listening').value)||0;
+  const R=parseInt(document.getElementById('lt2-reading').value)||0;
+  const W=parseInt(document.getElementById('lt2-writing').value)||0;
+  const S=parseInt(document.getElementById('lt2-speaking').value)||0;
+  const hasAny = document.getElementById('lt2-listening').value||document.getElementById('lt2-reading').value;
+  if(!hasAny){
+    document.getElementById('lt2-total').value='';
+    document.getElementById('lt2-avg').value='';
+    document.getElementById('lt2-level').value='';
+    return;
+  }
+  const sum=L+R+W+S;
+  const avg=Math.round(sum/4);
+  document.getElementById('lt2-total').value=sum+'점 / 400';
+  document.getElementById('lt2-avg').value=avg+'점';
+  document.getElementById('lt2-level').value=levelLabel(avg)[0];
+}
+
+function saveLT2(){
+  const name=document.getElementById('lt2-name').value.trim();
+  if(!name){alert('학생 이름을 입력해주세요.');return;}
+  const L=document.getElementById('lt2-listening').value;
+  if(!L){alert('듣기 점수를 입력해주세요.');return;}
+  const R=parseInt(document.getElementById('lt2-reading').value)||0;
+  const W=parseInt(document.getElementById('lt2-writing').value)||0;
+  const S=parseInt(document.getElementById('lt2-speaking').value)||0;
+  const Lv=parseInt(L)||0;
+  const sum=Lv+R+W+S, avg=Math.round(sum/4);
+
+  const rec={
+    id:'lt2_'+Date.now(),
+    type:document.getElementById('lt2-type').value,
+    date:document.getElementById('lt2-date').value||today(),
+    name,
+    cls:document.getElementById('lt2-class').value,
+    listening:Lv, reading:R, writing:W, speaking:S,
+    sum, avg,
+    level:levelLabel(avg)[0],
+    teacher:document.getElementById('lt2-teacher').value,
+    comment:document.getElementById('lt2-comment').value,
+  };
+  const data=loadLT2();
+  data.unshift(rec);
+  saveLT2Data(data);
+
+  // 예비원생 탭에 자동 등록
+  const studentData=load();
+  const existing=studentData.find(s=>s.name===name);
+  addToProspectiveFromLT({
+    name,
+    school: existing?.school||'',
+    grade: existing?.grade||'',
+    parentTel: existing?.parentTel||'',
+    studentTel: existing?.studentTel||'',
+    assignedClass: rec.cls,
+    consultDate: rec.date,
+    note: rec.comment||'',
+    ltListening: Lv, ltReading: R, ltWriting: W, ltSpeaking: S,
+  });
+
+  const msg=document.getElementById('lt2-msg');
+  msg.textContent=`✓ ${name} 학생 ${rec.type} 기록 저장 완료! (예비원생 탭에도 자동 등록됨)`;
+  setTimeout(()=>msg.textContent='',4000);
+
+  // 성적표 미리보기 자동 생성
+  showLT2Preview(rec);
+  renderLT2List();
+}
+
+function showLT2Preview(rec){
+  const areas=[['듣기',rec.listening,'#CC0066'],['읽기',rec.reading,'#FF1493'],['쓰기',rec.writing,'#e06090'],['말하기',rec.speaking,'#FFB6C1']];
+  const recClass=recLabel(rec.avg);
+  document.getElementById('lt2-preview-area').style.display='block';
+  document.getElementById('lt2-preview').innerHTML=`
+  <div class="rp-header">
+    <div class="rp-logo-row">
+      <div class="logo-books"><div class="b-l"></div><div class="b-s"></div><div class="b-r"></div><div class="b-dot"></div></div>
+      <div><div class="rp-logo-kr">이유정영어학원</div><div class="rp-logo-en">Yujeonglish</div></div>
+    </div>
+    <div class="rp-title">${rec.type} 성적 리포트</div>
+    <div class="rp-chips">
+      <div class="rp-chip"><div class="rp-chip-label">학생</div><div class="rp-chip-val">${rec.name}</div></div>
+      <div class="rp-chip"><div class="rp-chip-label">학년/반</div><div class="rp-chip-val">${rec.cls||'—'}</div></div>
+      <div class="rp-chip"><div class="rp-chip-label">시험일</div><div class="rp-chip-val">${fmt(rec.date)}</div></div>
+      <div class="rp-chip"><div class="rp-chip-label">유형</div><div class="rp-chip-val">${rec.type}</div></div>
+    </div>
+  </div>
+  <div class="rp-body">
+    <div class="rp-sec">영역별 점수</div>
+    <div class="rp-score-grid">
+      ${areas.map(([nm,sc])=>{const g=gradeLabel(sc);return`<div class="rp-score-card"><div class="rp-domain">${nm}</div><div class="rp-val">${sc}</div><div style="font-size:10px;color:#ccc">/ 100</div><div class="rp-grade" style="background:#FFF0F5;color:${g.c}">${g.l}</div></div>`}).join('')}
+    </div>
+    <div class="rp-summary">
+      <div class="rp-sum-card"><div class="rp-sum-label">총점</div><div class="rp-sum-val">${rec.sum}<span style="font-size:12px;color:#e088b4"> / 400</span></div></div>
+      <div class="rp-sum-card"><div class="rp-sum-label">평균</div><div class="rp-sum-val">${rec.avg}점</div></div>
+      <div class="rp-sum-card"><div class="rp-sum-label">추천 레벨</div><div class="rp-sum-val" style="font-size:14px;padding-top:3px">${rec.level}</div></div>
+    </div>
+    <div class="rp-sec">영역별 분석</div>
+    ${areas.map(([nm,sc,cl])=>`<div class="rp-bar-row"><div class="rp-bar-meta"><span class="rp-bar-name">${nm}</span><span class="rp-bar-score">${sc}점</span></div><div class="rp-bar-track"><div class="rp-bar-fill" style="width:${sc}%;background:${cl}"></div></div></div>`).join('')}
+    <br>
+    <div class="rp-sec">강사 코멘트</div>
+    <div class="rp-comment"><div class="rp-comment-text">${rec.comment||'코멘트 없음'}</div><div style="font-size:11px;color:var(--pink);text-align:right;margin-top:6px">— ${rec.teacher||'담당 강사'}</div></div>
+    <div class="rp-sec">추천 반 배정</div>
+    <div class="rp-rec"><div class="rp-rec-class">${rec.cls||recClass[0]}</div><div class="rp-rec-desc">${recClass[1]}</div></div>
+  </div>
+  <div class="rp-footer"><div class="rp-footer-info">${fmt(rec.date)} | ${rec.type} | 담당: ${rec.teacher||'담당 강사'} | 이유정영어학원 Yujeonglish</div></div>`;
+  document.getElementById('lt2-preview-area').scrollIntoView({behavior:'smooth'});
+}
+
+function clearLT2(){
+  ['lt2-name','lt2-teacher','lt2-comment','lt2-listening','lt2-reading','lt2-writing','lt2-speaking','lt2-total','lt2-avg','lt2-level'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  document.getElementById('lt2-type').selectedIndex=0;
+  document.getElementById('lt2-class').value='';
+  document.getElementById('lt2-suggest').innerHTML='';
+  document.getElementById('lt2-preview-area').style.display='none';
+}
+
+function renderLT2List(){
+  const q=(document.getElementById('lt2-search')?.value||'').toLowerCase();
+  const type=document.getElementById('lt2-search-type')?.value||'';
+  const cls=document.getElementById('lt2-search-class')?.value||'';
+  const data=loadLT2().filter(r=>{
+    return (!q||r.name.toLowerCase().includes(q))&&(!type||r.type===type)&&(!cls||r.cls===cls);
+  });
+  const tbody=document.getElementById('lt2-list-tbody');
+  tbody.innerHTML=data.length?data.map(r=>`<tr>
+    <td>${fmt(r.date)}</td>
+    <td><span class="badge" style="background:#EEF3F9;color:#2D4A6E">${r.type}</span></td>
+    <td><b>${r.name}</b></td><td>${r.cls||'—'}</td>
+    <td>${r.listening}</td><td>${r.reading}</td><td>${r.writing}</td><td>${r.speaking}</td>
+    <td style="font-weight:500;color:#CC0066">${r.avg}점</td>
+    <td>${r.level}</td>
+    <td style="display:flex;gap:4px">
+      <button class="btn-pink-sm" onclick="showLT2Preview(loadLT2().find(x=>x.id==='${r.id}'))">성적표</button>
+      <button class="btn-danger" onclick="deleteLT2('${r.id}')">삭제</button>
+    </td>
+  </tr>`).join(''):'<tr><td colspan="11" style="text-align:center;padding:24px;color:var(--sub)">기록이 없습니다</td></tr>';
+}
+
+function deleteLT2(id){
+  if(!confirm('삭제하시겠습니까?'))return;
+  saveLT2Data(loadLT2().filter(r=>r.id!==id));
+  renderLT2List();
+}
+
+// ── 상담 기록 ──────────────────────────
+const CL_KEY = 'yujeonglish_consultlog';
+function loadCL(){try{return JSON.parse(localStorage.getItem(CL_KEY)||'[]')}catch{return[]}}
+function saveCL(d){localStorage.setItem(CL_KEY,JSON.stringify(d))}
+
+function clAutoComplete(){
+  const q=document.getElementById('cl-name').value.trim().toLowerCase();
+  const box=document.getElementById('cl-suggest');
+  if(!q){box.innerHTML='';return;}
+  const students=load().filter(s=>s.name.toLowerCase().includes(q)).slice(0,6);
+  if(!students.length){box.innerHTML='';return;}
+  box.innerHTML=`<div style="position:absolute;z-index:50;background:#fff;border:1px solid var(--border);border-radius:8px;width:100%;box-shadow:0 4px 12px rgba(0,0,0,0.1);max-height:180px;overflow-y:auto">
+    ${students.map(s=>`<div onclick="clSelectStudent('${s.id}')" style="padding:8px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid #f5f5f5;display:flex;justify-content:space-between" onmouseover="this.style.background='#FFF0F5'" onmouseout="this.style.background='#fff'">
+      <b>${s.name}</b><span style="color:var(--sub)">${s.assignedClass||''} · ${s.grade||''}</span>
+    </div>`).join('')}
+  </div>`;
+}
+
+function clSelectStudent(id){
+  const s=load().find(x=>x.id===id);
+  if(!s)return;
+  document.getElementById('cl-name').value=s.name;
+  document.getElementById('cl-suggest').innerHTML='';
+}
+
+function saveConsultLog(){
+  const name=document.getElementById('cl-name').value.trim();
+  const content=document.getElementById('cl-content').value.trim();
+  if(!name){alert('학생 이름을 입력해주세요.');return;}
+  if(!content){alert('상담 내용을 입력해주세요.');return;}
+  const rec={
+    id:'cl_'+Date.now(),
+    date:document.getElementById('cl-date').value||today(),
+    name,
+    type:document.getElementById('cl-type').value,
+    content,
+    action:document.getElementById('cl-action').value,
+    actionDate:document.getElementById('cl-action-date').value,
+  };
+  const data=loadCL();
+  data.unshift(rec);
+  saveCL(data);
+  const msg=document.getElementById('cl-msg');
+  msg.textContent=`✓ ${name} 학생 상담 기록 저장 완료!`;
+  setTimeout(()=>msg.textContent='',3000);
+  clearConsultLog();
+  renderConsultLog();
+}
+
+function clearConsultLog(){
+  ['cl-name','cl-content','cl-action-date'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  document.getElementById('cl-type').selectedIndex=0;
+  document.getElementById('cl-action').selectedIndex=0;
+  document.getElementById('cl-suggest').innerHTML='';
+  document.getElementById('cl-date').value=today();
+}
+
+function renderConsultLog(){
+  const q=(document.getElementById('cl-search')?.value||'').toLowerCase();
+  const type=document.getElementById('cl-search-type')?.value||'';
+  const date=document.getElementById('cl-search-date')?.value||'';
+  const data=loadCL().filter(r=>{
+    return (!q||r.name.toLowerCase().includes(q))&&(!type||r.type===type)&&(!date||r.date===date);
+  });
+  const tbody=document.getElementById('cl-list-tbody');
+  tbody.innerHTML=data.length?data.map(r=>`<tr>
+    <td>${fmt(r.date)}</td>
+    <td><b>${r.name}</b></td>
+    <td><span class="badge" style="background:#EEF3F9;color:#2D4A6E">${r.type}</span></td>
+    <td style="max-width:300px;font-size:12px">${r.content.length>60?r.content.slice(0,60)+'…':r.content}</td>
+    <td>${r.action?`<span class="badge badge-callback">${r.action}</span>`:'—'}</td>
+    <td style="${r.actionDate===today()?'color:var(--pink);font-weight:500':''}">${fmt(r.actionDate)||'—'}</td>
+    <td style="display:flex;gap:4px">
+      <button class="btn-pink-sm" onclick="viewConsultDetail('${r.id}')">상세</button>
+      <button class="btn-danger" onclick="deleteCL('${r.id}')">삭제</button>
+    </td>
+  </tr>`).join(''):'<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--sub)">상담 기록이 없습니다</td></tr>';
+}
+
+function viewConsultDetail(id){
+  const r=loadCL().find(x=>x.id===id);
+  if(!r)return;
+  document.getElementById('modal-title').textContent=r.name+' — '+r.type;
+  document.getElementById('modal-body').innerHTML=`
+    <div style="margin-bottom:12px">
+      ${[['날짜',fmt(r.date)],['유형',r.type],['다음 액션',r.action||'없음'],['액션 날짜',fmt(r.actionDate)||'—']].map(([l,v])=>`
+        <div style="display:flex;gap:8px;margin-bottom:8px;font-size:13px">
+          <span style="color:var(--sub);width:90px;flex-shrink:0">${l}</span><span>${v}</span>
+        </div>`).join('')}
+    </div>
+    <div style="background:#f9f9f9;border-radius:8px;padding:14px;font-size:13px;color:#333;line-height:1.8;white-space:pre-wrap">${r.content}</div>`;
+  document.getElementById('detail-modal').classList.add('show');
+}
+
+function deleteCL(id){
+  if(!confirm('삭제하시겠습니까?'))return;
+  saveCL(loadCL().filter(r=>r.id!==id));
+  renderConsultLog();
+}
+
+// ── 단어테스트 ──────────────────────────
+const WT_KEY = 'yujeonglish_wordtest';
+function loadWT(){try{return JSON.parse(localStorage.getItem(WT_KEY)||'[]')}catch{return[]}}
+function saveWT(data){localStorage.setItem(WT_KEY,JSON.stringify(data))}
+
+function refreshWordTestClassSelects(){
+  const html = getClassOptions();
+  ['wt-class','wt-search-class','wd-filter-class','wd-class-detail'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const cur=el.value;
+    el.innerHTML=id.includes('search')||id.includes('filter')||id.includes('detail')
+      ? '<option value="">전체 반</option>'+html.replace('<option value="">선택</option>','')
+      : html;
+    if(cur)el.value=cur;
+  });
+}
+function refreshWordDashClassSelects(){refreshWordTestClassSelects();}
+
+// 자동완성
+function wtAutoComplete(){
+  const q = document.getElementById('wt-name').value.trim().toLowerCase();
+  const box = document.getElementById('wt-suggest');
+  if(!q){box.innerHTML='';return;}
+  const students = load().filter(s=>s.name.toLowerCase().includes(q)).slice(0,6);
+  if(!students.length){box.innerHTML='';return;}
+  box.innerHTML=`<div style="position:absolute;z-index:50;background:#fff;border:1px solid var(--border);border-radius:8px;width:100%;box-shadow:0 4px 12px rgba(0,0,0,0.1);max-height:180px;overflow-y:auto">
+    ${students.map(s=>`<div onclick="wtSelectStudent('${s.id}')" style="padding:8px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid #f5f5f5;display:flex;justify-content:space-between" onmouseover="this.style.background='#FFF0F5'" onmouseout="this.style.background='#fff'">
+      <span><b>${s.name}</b></span><span style="color:var(--sub)">${s.assignedClass||''} · ${s.grade||''}</span>
+    </div>`).join('')}
+  </div>`;
+}
+
+function wtSelectStudent(id){
+  const s = load().find(x=>x.id===id);
+  if(!s)return;
+  document.getElementById('wt-name').value = s.name;
+  document.getElementById('wt-class').value = s.assignedClass||'';
+  document.getElementById('wt-parenttel').value = s.parentTel||'';
+  document.getElementById('wt-suggest').innerHTML='';
+}
+
+// 자동 판정
+function wtCalc(){
+  const paper = parseInt(document.getElementById('wt-paper').value)||0;
+  const online = parseInt(document.getElementById('wt-online').value)||0;
+  const pEl = document.getElementById('wt-paper');
+  const oEl = document.getElementById('wt-online');
+  const judgeEl = document.getElementById('wt-judge');
+  const gapEl = document.getElementById('wt-gap');
+
+  if(!pEl.value && !oEl.value){judgeEl.value='';gapEl.value='';return;}
+
+  // 단어판정
+  const pass = paper>=90 && online>=90;
+  judgeEl.value = pass ? 'Pass' : 'Retest';
+  judgeEl.style.color = pass ? '#1A6630' : '#854F0B';
+  judgeEl.style.background = pass ? '#D6EFDC' : '#FFF3CD';
+
+  // 괴리판정
+  if(pEl.value && oEl.value){
+    const suspect = online>=90 && paper<90;
+    gapEl.value = suspect ? '⚠️ 의심' : '정상';
+    gapEl.style.color = suspect ? '#7B1450' : '#1A6630';
+    gapEl.style.background = suspect ? '#FAE1EF' : '#D6EFDC';
+  } else {
+    gapEl.value='—';gapEl.style.color='#888';gapEl.style.background='#f5f5f5';
+  }
+}
+
+function saveWordTest(){
+  const name = document.getElementById('wt-name').value.trim();
+  if(!name){alert('학생 이름을 입력해주세요.');return;}
+  const paper = document.getElementById('wt-paper').value;
+  const online = document.getElementById('wt-online').value;
+  if(!paper){alert('종이시험 점수를 입력해주세요.');return;}
+
+  const p = parseInt(paper), o = parseInt(online)||0;
+  const judge = (p>=90&&o>=90) ? 'Pass' : 'Retest';
+  const gap = (online && o>=90 && p<90) ? '의심' : '정상';
+
+  const rec = {
+    id: 'wt_'+Date.now(),
+    date: document.getElementById('wt-date').value || today(),
+    name,
+    cls: document.getElementById('wt-class').value,
+    hw: document.getElementById('wt-hw').value,
+    paper: p,
+    online: online ? o : '',
+    judge,
+    gap,
+    parentTel: document.getElementById('wt-parenttel').value,
+    note: document.getElementById('wt-note').value,
+  };
+  const data = loadWT();
+  data.unshift(rec);
+  saveWT(data);
+  const msg = document.getElementById('wt-msg');
+  msg.textContent = `✓ ${name} 학생 기록 저장 완료!`;
+  setTimeout(()=>msg.textContent='',3000);
+  clearWordTest();
+  renderWordTestList();
+}
+
+function clearWordTest(){
+  ['wt-name','wt-paper','wt-online','wt-note','wt-parenttel'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  document.getElementById('wt-hw').selectedIndex=0;
+  document.getElementById('wt-class').value='';
+  document.getElementById('wt-judge').value='';
+  document.getElementById('wt-judge').style.background='#f5f5f5';
+  document.getElementById('wt-gap').value='';
+  document.getElementById('wt-gap').style.background='#f5f5f5';
+  document.getElementById('wt-suggest').innerHTML='';
+}
+
+function wtJudgeBadge(v){
+  if(v==='Pass') return `<span class="badge" style="background:#D6EFDC;color:#1A6630">Pass</span>`;
+  if(v==='Retest') return `<span class="badge" style="background:#FFF3CD;color:#854F0B">Retest</span>`;
+  return v||'—';
+}
+function wtHwBadge(v){
+  if(v==='F') return `<span class="badge" style="background:#FADADD;color:#8B0000">F</span>`;
+  if(v==='P') return `<span class="badge" style="background:#D6EFDC;color:#1A6630">P</span>`;
+  return v||'—';
+}
+function wtGapBadge(v){
+  if(v==='의심') return `<span class="badge" style="background:#FAE1EF;color:#7B1450">⚠️ 의심</span>`;
+  if(v==='정상') return `<span class="badge" style="background:#D6EFDC;color:#1A6630">정상</span>`;
+  return v||'—';
+}
+
+function renderWordTestList(){
+  const q = (document.getElementById('wt-search')?.value||'').toLowerCase();
+  const cls = document.getElementById('wt-search-class')?.value||'';
+  const judge = document.getElementById('wt-search-judge')?.value||'';
+  const date = document.getElementById('wt-search-date')?.value||'';
+  const data = loadWT().filter(r=>{
+    const nameOk = !q || r.name.toLowerCase().includes(q);
+    const clsOk = !cls || r.cls===cls;
+    const dateOk = !date || r.date===date;
+    const judgeOk = !judge ||
+      (judge==='Retest'&&r.judge==='Retest') ||
+      (judge==='F'&&r.hw==='F') ||
+      (judge==='의심'&&r.gap==='의심');
+    return nameOk&&clsOk&&dateOk&&judgeOk;
+  });
+  const tbody = document.getElementById('wt-list-tbody');
+  tbody.innerHTML = data.length ? data.map(r=>`<tr>
+    <td>${fmt(r.date)}</td>
+    <td><b>${r.name}</b></td>
+    <td>${r.cls||'—'}</td>
+    <td>${wtHwBadge(r.hw)}</td>
+    <td style="${r.paper<90?'color:#A32D2D;font-weight:500':''}">${r.paper}</td>
+    <td style="${r.online&&r.online<90?'color:#A32D2D;font-weight:500':''}">${r.online===''?'—':r.online}</td>
+    <td>${wtJudgeBadge(r.judge)}</td>
+    <td>${wtGapBadge(r.gap)}</td>
+    <td style="font-size:11px">${r.parentTel||'—'}</td>
+    <td style="font-size:11px;color:var(--sub)">${r.note||'—'}</td>
+    <td><button class="btn-danger" onclick="deleteWT('${r.id}')">삭제</button></td>
+  </tr>`).join('') : '<tr><td colspan="11" style="text-align:center;padding:24px;color:var(--sub)">기록이 없습니다</td></tr>';
+}
+
+function deleteWT(id){
+  if(!confirm('삭제하시겠습니까?'))return;
+  saveWT(loadWT().filter(r=>r.id!==id));
+  renderWordTestList();
+  renderWordDashboard();
+}
+
+// ── 단어 대시보드 ──────────────────────────
+function renderWordDashboard(){
+  const cls = document.getElementById('wd-filter-class')?.value||'';
+  const date = document.getElementById('wd-filter-date')?.value||'';
+  let data = loadWT();
+  if(cls) data = data.filter(r=>r.cls===cls);
+  if(date) data = data.filter(r=>r.date===date);
+
+  const failList = data.filter(r=>r.hw==='F');
+  const retestList = data.filter(r=>r.judge==='Retest');
+  const suspectList = data.filter(r=>r.gap==='의심');
+  const passCount = data.filter(r=>r.judge==='Pass').length;
+  const total = data.filter(r=>r.judge).length;
+
+  document.getElementById('wd-total').textContent = data.length;
+  document.getElementById('wd-fail').textContent = failList.length;
+  document.getElementById('wd-retest').textContent = retestList.length;
+  document.getElementById('wd-suspect').textContent = suspectList.length;
+  document.getElementById('wd-pass-rate').textContent = total ? Math.round(passCount/total*100)+'%' : '—';
+
+  const info = [];
+  if(cls) info.push(cls);
+  if(date) info.push(date.replace(/-/g,'.'));
+  document.getElementById('wd-filter-info').textContent = info.length ? info.join(' · ')+' 기준' : '';
+
+  document.getElementById('wd-fail-tbody').innerHTML = failList.length ?
+    failList.map(r=>`<tr><td>${fmt(r.date)}</td><td><b>${r.name}</b></td><td>${r.cls||'—'}</td><td style="font-size:11px">${r.parentTel||'—'}</td></tr>`).join('') :
+    '<tr><td colspan="4" style="text-align:center;padding:12px;color:var(--sub)">없음 ✓</td></tr>';
+
+  document.getElementById('wd-retest-tbody').innerHTML = retestList.length ?
+    retestList.map(r=>`<tr><td>${fmt(r.date)}</td><td><b>${r.name}</b></td><td>${r.cls||'—'}</td><td style="color:#A32D2D">${r.paper}</td><td style="color:#A32D2D">${r.online===''?'—':r.online}</td></tr>`).join('') :
+    '<tr><td colspan="5" style="text-align:center;padding:12px;color:var(--sub)">없음 ✓</td></tr>';
+
+  document.getElementById('wd-suspect-tbody').innerHTML = suspectList.length ?
+    suspectList.map(r=>`<tr><td>${fmt(r.date)}</td><td><b>${r.name}</b></td><td>${r.cls||'—'}</td><td style="color:#A32D2D">${r.paper}</td><td style="color:#1A6630;font-weight:500">${r.online===''?'—':r.online}</td></tr>`).join('') :
+    '<tr><td colspan="5" style="text-align:center;padding:12px;color:var(--sub)">없음 ✓</td></tr>';
+
+  renderWordClassDetail();
+}
+
+function renderWordClassDetail(){
+  const cls = document.getElementById('wd-class-detail')?.value||'';
+  const date = document.getElementById('wd-class-date')?.value||'';
+  if(!cls){
+    document.getElementById('wd-class-detail-tbody').innerHTML=
+      '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--sub)">반을 선택하세요</td></tr>';
+    return;
+  }
+  let data = loadWT().filter(r=>r.cls===cls);
+  if(date) data = data.filter(r=>r.date===date);
+  document.getElementById('wd-class-detail-tbody').innerHTML = data.length ?
+    data.map(r=>`<tr>
+      <td>${fmt(r.date)}</td><td><b>${r.name}</b></td>
+      <td>${wtHwBadge(r.hw)}</td>
+      <td style="${r.paper<90?'color:#A32D2D;font-weight:500':''}">${r.paper}</td>
+      <td style="${r.online&&r.online<90?'color:#A32D2D;font-weight:500':''}">${r.online===''?'—':r.online}</td>
+      <td>${wtJudgeBadge(r.judge)}</td>
+      <td>${wtGapBadge(r.gap)}</td>
+      <td style="font-size:11px;color:var(--sub)">${r.note||'—'}</td>
+    </tr>`).join('') :
+    '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--sub)">기록이 없습니다</td></tr>';
+}
+
+// ── 재시 일정 ──────────────────────────
+const RS_KEY = 'yujeonglish_retest';
+const ALIGO_KEY = 'yujeonglish_aligo';
+function loadRS(){try{return JSON.parse(localStorage.getItem(RS_KEY)||'[]')}catch{return[]}}
+function saveRS(data){localStorage.setItem(RS_KEY,JSON.stringify(data))}
+function loadAligoConfig(){try{return JSON.parse(localStorage.getItem(ALIGO_KEY)||'{}')}catch{return{}}}
+function saveAligoConfig(){
+  const cfg={id:document.getElementById('aligo-id').value.trim(),key:document.getElementById('aligo-key').value.trim(),sender:document.getElementById('aligo-sender').value.trim()};
+  localStorage.setItem(ALIGO_KEY,JSON.stringify(cfg));
+  const msg=document.getElementById('aligo-config-msg');
+  msg.textContent='✓ 설정 저장 완료!';setTimeout(()=>msg.textContent='',3000);
+}
+
+function rsAutoComplete(){
+  const q=document.getElementById('rs-name').value.trim().toLowerCase();
+  const box=document.getElementById('rs-suggest');
+  if(!q){box.innerHTML='';return;}
+  const students=load().filter(s=>s.name.toLowerCase().includes(q)).slice(0,6);
+  if(!students.length){box.innerHTML='';return;}
+  box.innerHTML=`<div style="position:absolute;z-index:50;background:#fff;border:1px solid var(--border);border-radius:8px;width:100%;box-shadow:0 4px 12px rgba(0,0,0,0.1);max-height:180px;overflow-y:auto">
+    ${students.map(s=>`<div onclick="rsSelectStudent('${s.id}')" style="padding:8px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid #f5f5f5;display:flex;justify-content:space-between" onmouseover="this.style.background='#FFF0F5'" onmouseout="this.style.background='#fff'">
+      <span><b>${s.name}</b></span><span style="color:var(--sub)">${s.assignedClass||''} · ${s.grade||''}</span>
+    </div>`).join('')}
+  </div>`;
+  updateSmsPreview();
+}
+
+function rsSelectStudent(id){
+  const s=load().find(x=>x.id===id);
+  if(!s)return;
+  document.getElementById('rs-name').value=s.name;
+  document.getElementById('rs-class').value=s.assignedClass||'';
+  document.getElementById('rs-parent-tel').value=s.parentTel||'';
+  document.getElementById('rs-student-tel').value=s.studentTel||'';
+  document.getElementById('rs-suggest').innerHTML='';
+  updateSmsPreview();
+}
+
+function updateSmsPreview(){
+  const name=document.getElementById('rs-name').value||'(학생이름)';
+  const type=document.getElementById('rs-type').value;
+  const date=document.getElementById('rs-date').value||'(날짜)';
+  const time=document.getElementById('rs-time').value||'';
+  const note=document.getElementById('rs-note').value||'';
+  const dateStr=date.replace(/-/g,'.');
+  const preview=`안녕하세요, 이유정영어학원 Yujeonglish입니다.
+${name} 학생의 ${type} 일정을 안내드립니다.
+
+📅 날짜: ${dateStr}
+⏰ 시간: ${time||'추후 안내'}
+📌 내용: ${note||type}
+
+준비물을 꼭 챙겨오도록 지도 부탁드립니다.
+감사합니다.`;
+  document.getElementById('rs-sms-preview').textContent=preview;
+}
+
+// 입력값 변경시 미리보기 갱신
+['rs-type','rs-date','rs-time','rs-note','rs-name'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el) el.addEventListener('input',updateSmsPreview);
+});
+const rsTypeEl=document.getElementById('rs-type');
+if(rsTypeEl) rsTypeEl.addEventListener('change',updateSmsPreview);
+
+function saveRetestSchedule(){
+  const name=document.getElementById('rs-name').value.trim();
+  const date=document.getElementById('rs-date').value;
+  if(!name||!date){alert('학생 이름과 재시 날짜는 필수입니다.');return;}
+  const rec={
+    id:'rs_'+Date.now(),
+    type:document.getElementById('rs-type').value,
+    date,
+    time:document.getElementById('rs-time').value,
+    name,
+    cls:document.getElementById('rs-class').value,
+    parentTel:document.getElementById('rs-parent-tel').value,
+    studentTel:document.getElementById('rs-student-tel').value,
+    sms:document.getElementById('rs-sms').value,
+    note:document.getElementById('rs-note').value,
+    status:'예정',
+    smsSent:false,
+  };
+  const data=loadRS();
+  data.unshift(rec);
+  saveRS(data);
+  const msg=document.getElementById('rs-msg');
+  msg.textContent=`✓ ${name} 학생 ${rec.type} 일정 저장!`;
+  setTimeout(()=>msg.textContent='',3000);
+  clearRetestForm();
+  renderRetestList();
+  renderToday();
+}
+
+function clearRetestForm(){
+  ['rs-name','rs-time','rs-note','rs-parent-tel','rs-student-tel'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('rs-type').selectedIndex=0;
+  document.getElementById('rs-sms').selectedIndex=0;
+  document.getElementById('rs-date').value='';
+  document.getElementById('rs-suggest').innerHTML='';
+  document.getElementById('rs-sms-preview').textContent='';
+}
+
+function renderRetestList(){
+  const q=(document.getElementById('rs-search')?.value||'').toLowerCase();
+  const type=document.getElementById('rs-filter-type')?.value||'';
+  const status=document.getElementById('rs-filter-status')?.value||'';
+  const date=document.getElementById('rs-filter-date')?.value||'';
+  const data=loadRS().filter(r=>{
+    const nOk=!q||r.name.toLowerCase().includes(q);
+    const tOk=!type||r.type===type;
+    const sOk=!status||r.status===status;
+    const dOk=!date||r.date===date;
+    return nOk&&tOk&&sOk&&dOk;
+  }).sort((a,b)=>a.date.localeCompare(b.date));
+  const t=today();
+  const tbody=document.getElementById('rs-list-tbody');
+  tbody.innerHTML=data.length?data.map(r=>{
+    const isToday=r.date===t;
+    const past=r.date<t&&r.status==='예정';
+    const statusBg=r.status==='완료'?'badge-registered':r.status==='취소'?'badge-cancel':'badge-pending';
+    return`<tr style="${isToday?'background:#FFF8E8':past?'background:#fff8f8':''}">
+      <td style="${isToday?'color:#B8860B;font-weight:500':past?'color:#A32D2D':''}">${fmt(r.date)}${isToday?' 🔔':''}</td>
+      <td><span class="badge" style="background:#f0f0f0;color:#666;font-size:10px">${r.type}</span></td>
+      <td><b>${r.name}</b></td>
+      <td>${r.cls||'—'}</td>
+      <td style="font-size:11px">${r.time||'—'}</td>
+      <td style="font-size:11px">${r.parentTel||'—'}</td>
+      <td style="font-size:11px">${r.studentTel||'—'}</td>
+      <td>${r.smsSent?'<span class="badge badge-registered">발송완료</span>':r.sms==='Y'?`<button class="btn-pink-sm" onclick="sendRetestSms('${r.id}')">📱 발송</button>`:'<span style="font-size:11px;color:#aaa">발송안함</span>'}</td>
+      <td>
+        <select onchange="updateRetestStatus('${r.id}',this.value)" style="font-size:11px;padding:3px 6px;border:1px solid var(--border);border-radius:4px">
+          <option ${r.status==='예정'?'selected':''}>예정</option>
+          <option ${r.status==='완료'?'selected':''}>완료</option>
+          <option ${r.status==='취소'?'selected':''}>취소</option>
+        </select>
+      </td>
+      <td style="font-size:11px;color:var(--sub)">${r.note||'—'}</td>
+      <td><button class="btn-danger" onclick="deleteRS('${r.id}')">삭제</button></td>
+    </tr>`;
+  }).join(''):'<tr><td colspan="11" style="text-align:center;padding:24px;color:var(--sub)">재시 일정이 없습니다</td></tr>';
+}
+
+function updateRetestStatus(id,status){
+  const data=loadRS();
+  const idx=data.findIndex(r=>r.id===id);
+  if(idx>=0){data[idx].status=status;saveRS(data);}
+  renderRetestList();renderToday();
+}
+
+function deleteRS(id){
+  if(!confirm('삭제하시겠습니까?'))return;
+  saveRS(loadRS().filter(r=>r.id!==id));
+  renderRetestList();renderToday();
+}
+
+// 알리고 문자 발송
+async function sendRetestSms(id){
+  const cfg=loadAligoConfig();
+  if(!cfg.id||!cfg.key||!cfg.sender){
+    alert('먼저 알리고 API 설정을 저장해주세요.');return;
+  }
+  const data=loadRS();
+  const r=data.find(x=>x.id===id);
+  if(!r)return;
+
+  const tel=r.parentTel||r.studentTel;
+  if(!tel){alert('연락처가 없습니다. 학생 DB에서 연락처를 먼저 입력해주세요.');return;}
+
+  const dateStr=r.date.replace(/-/g,'.');
+  const msg=`안녕하세요, 이유정영어학원 Yujeonglish입니다.\n${r.name} 학생의 ${r.type} 일정을 안내드립니다.\n📅 날짜: ${dateStr}\n⏰ 시간: ${r.time||'추후 안내'}\n📌 내용: ${r.note||r.type}\n준비물을 꼭 챙겨오도록 지도 부탁드립니다. 감사합니다.`;
+
+  if(!confirm(`아래 내용으로 문자를 발송하시겠습니까?\n\n수신: ${tel}\n\n${msg}`))return;
+
+  try{
+    const form=new FormData();
+    form.append('key',cfg.key);
+    form.append('user_id',cfg.id);
+    form.append('sender',cfg.sender);
+    form.append('receiver',tel.replace(/-/g,''));
+    form.append('msg',msg);
+    form.append('msg_type','LMS');
+
+    const res=await fetch('https://apis.aligo.in/send/',{method:'POST',body:form});
+    const result=await res.json();
+
+    if(result.result_code==='1'){
+      const idx=data.findIndex(x=>x.id===id);
+      if(idx>=0){data[idx].smsSent=true;saveRS(data);}
+      alert('✅ 문자 발송 완료!');
+      renderRetestList();
+    } else {
+      alert('문자 발송 실패: '+result.message);
+    }
+  }catch(e){
+    alert('발송 오류: '+e.message);
+  }
+}
+
+async function testAligo(){
+  const cfg=loadAligoConfig();
+  if(!cfg.id||!cfg.key||!cfg.sender){alert('먼저 설정을 저장해주세요.');return;}
+  const tel=prompt('테스트 문자를 받을 번호를 입력하세요 (본인 번호):');
+  if(!tel)return;
+  try{
+    const form=new FormData();
+    form.append('key',cfg.key);
+    form.append('user_id',cfg.id);
+    form.append('sender',cfg.sender);
+    form.append('receiver',tel.replace(/-/g,''));
+    form.append('msg','[이유정영어학원 Yujeonglish] 테스트 문자입니다. 알리고 연동이 정상적으로 설정되었습니다.');
+    form.append('msg_type','SMS');
+    const res=await fetch('https://apis.aligo.in/send/',{method:'POST',body:form});
+    const result=await res.json();
+    alert(result.result_code==='1'?'✅ 테스트 문자 발송 성공!':'발송 실패: '+result.message);
+  }catch(e){alert('오류: '+e.message);}
+}
+
+// ── 예비원생 ──────────────────────────
+const PS_KEY = 'yujeonglish_prospective';
+function loadPS(){try{return JSON.parse(localStorage.getItem(PS_KEY)||'[]')}catch{return[]}}
+function savePS(data){localStorage.setItem(PS_KEY,JSON.stringify(data))}
+
+function saveProspective(){
+  const name = document.getElementById('ps-name').value.trim();
+  const parentTel = document.getElementById('ps-parent-tel').value.trim();
+  if(!name){alert('학생 이름을 입력해주세요.');return;}
+  const rec = {
+    id: 'ps_'+Date.now(),
+    date: document.getElementById('ps-date').value || today(),
+    name,
+    school: document.getElementById('ps-school').value.trim(),
+    grade: document.getElementById('ps-grade').value,
+    parentTel,
+    studentTel: document.getElementById('ps-student-tel').value.trim(),
+    route: document.getElementById('ps-route').value,
+    wantClass: document.getElementById('ps-want-class').value,
+    callbackDate: document.getElementById('ps-callback-date').value,
+    trialDate: document.getElementById('ps-trial-date').value,
+    trialTime: document.getElementById('ps-trial-time').value,
+    status: document.getElementById('ps-status').value,
+    note: document.getElementById('ps-note').value.trim(),
+    // 레벨테스트 점수 (레벨테스트 탭에서 자동 연동시 채워짐)
+    ltListening:'', ltReading:'', ltWriting:'', ltSpeaking:'',
+  };
+  const data = loadPS();
+  data.push(rec);
+  // 날짜순 정렬
+  data.sort((a,b)=>a.date.localeCompare(b.date));
+  savePS(data);
+  const msg = document.getElementById('ps-save-msg');
+  msg.textContent = `✓ ${name} 학생 예비원생 등록 완료!`;
+  setTimeout(()=>msg.textContent='',3000);
+  clearProspectiveForm();
+  renderProspectiveList();
+  renderTodayPS();
+}
+
+function clearProspectiveForm(){
+  ['ps-name','ps-school','ps-parent-tel','ps-student-tel','ps-note','ps-callback-date','ps-trial-date','ps-trial-time'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('ps-grade').selectedIndex=0;
+  document.getElementById('ps-route').selectedIndex=0;
+  document.getElementById('ps-status').selectedIndex=0;
+  document.getElementById('ps-want-class').value='';
+  document.getElementById('ps-date').value=today();
+}
+
+function psBadge(s){
+  const map={
+    '대기중':'background:#FFF8E8;color:#854F0B',
+    '콜백예정':'background:#FFF0F5;color:#CC0066',
+    '청강예정':'background:#E8F4FD;color:#185FA5',
+    '등록완료':'background:#D6EFDC;color:#1A6630',
+    '미등록':'background:#f5f5f5;color:#888',
+  };
+  return `<span class="badge" style="${map[s]||''}">${s}</span>`;
+}
+
+function renderProspectiveList(){
+  const q=(document.getElementById('ps-search')?.value||'').toLowerCase();
+  const st=document.getElementById('ps-filter-status')?.value||'';
+  const rt=document.getElementById('ps-filter-route')?.value||'';
+  const data=loadPS().filter(r=>{
+    const nOk=!q||(r.name||'').toLowerCase().includes(q)||(r.school||'').toLowerCase().includes(q)||(r.parentTel||'').includes(q);
+    const sOk=!st||r.status===st;
+    const rOk=!rt||r.route===rt;
+    return nOk&&sOk&&rOk;
+  });
+
+  // 통계
+  const all=loadPS();
+  document.getElementById('ps-total').textContent=all.length;
+  document.getElementById('ps-waiting').textContent=all.filter(r=>r.status==='대기중'||r.status==='콜백예정').length;
+  document.getElementById('ps-trial').textContent=all.filter(r=>r.status==='청강예정').length;
+  document.getElementById('ps-registered').textContent=all.filter(r=>r.status==='등록완료').length;
+  document.getElementById('ps-cancelled').textContent=all.filter(r=>r.status==='미등록').length;
+
+  const t=today();
+  // 대기중인 학생만 순번 부여 (날짜순)
+  const waitingIds=all.filter(r=>r.status==='대기중'||r.status==='콜백예정')
+    .sort((a,b)=>a.date.localeCompare(b.date)).map(r=>r.id);
+
+  const tbody=document.getElementById('ps-list-tbody');
+  tbody.innerHTML=data.length?data.map(r=>{
+    const waitNum=waitingIds.indexOf(r.id);
+    const numBadge=waitNum>=0
+      ?`<span style="background:#FFF3CD;color:#854F0B;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:500">${waitNum+1}</span>`
+      :'—';
+    const isCallbackToday=r.callbackDate===t;
+    const isTrialToday=r.trialDate===t;
+    const hasLt=r.ltListening||r.ltReading||r.ltWriting||r.ltSpeaking;
+    return`<tr style="${r.status==='등록완료'?'opacity:0.6':''}">
+      <td style="text-align:center">${numBadge}</td>
+      <td>${fmt(r.date)}</td>
+      <td>
+        <b>${r.name}</b>
+        ${hasLt?`<span style="font-size:10px;background:#FFF0F5;color:#CC0066;padding:1px 5px;border-radius:4px;margin-left:4px">LT</span>`:''}
+      </td>
+      <td style="font-size:11px">${r.school||'—'} ${r.grade||''}</td>
+      <td><span style="font-size:11px;color:var(--sub)">${r.route||'—'}</span></td>
+      <td style="font-size:11px">${r.parentTel||'—'}</td>
+      <td style="font-size:11px">${r.wantClass||'—'}</td>
+      <td style="font-size:11px;${isCallbackToday?'color:#CC0066;font-weight:500':''}">${fmt(r.callbackDate)}${isCallbackToday?' 🔔':''}</td>
+      <td style="font-size:11px;${isTrialToday?'color:#185FA5;font-weight:500':''}">${fmt(r.trialDate)}${isTrialToday?' 🔔':''} ${r.trialTime||''}</td>
+      <td>
+        <select onchange="updatePSStatus('${r.id}',this.value)" style="font-size:11px;padding:3px 5px;border:1px solid var(--border);border-radius:4px;font-family:'Noto Sans KR',sans-serif">
+          ${['대기중','콜백예정','청강예정','등록완료','미등록'].map(s=>`<option ${r.status===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </td>
+      <td style="font-size:11px;color:var(--sub);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.note||''}">${r.note||'—'}</td>
+      <td style="display:flex;gap:4px">
+        <button class="btn-pink-sm" onclick="editProspective('${r.id}')">수정</button>
+        <button class="btn-danger" onclick="deletePS('${r.id}')">삭제</button>
+      </td>
+    </tr>`;
+  }).join(''):'<tr><td colspan="12" style="text-align:center;padding:24px;color:var(--sub)">예비원생이 없습니다</td></tr>';
+}
+
+function updatePSStatus(id, status){
+  const data=loadPS();
+  const idx=data.findIndex(r=>r.id===id);
+  if(idx>=0){data[idx].status=status;savePS(data);}
+  renderProspectiveList();
+  renderTodayPS();
+}
+
+function deletePS(id){
+  if(!confirm('삭제하시겠습니까?'))return;
+  savePS(loadPS().filter(r=>r.id!==id));
+  renderProspectiveList();
+  renderTodayPS();
+}
+
+function editProspective(id){
+  const r=loadPS().find(x=>x.id===id);
+  if(!r)return;
+  // 폼에 데이터 채우기
+  document.getElementById('ps-date').value=r.date||'';
+  document.getElementById('ps-name').value=r.name||'';
+  document.getElementById('ps-school').value=r.school||'';
+  document.getElementById('ps-grade').value=r.grade||'';
+  document.getElementById('ps-parent-tel').value=r.parentTel||'';
+  document.getElementById('ps-student-tel').value=r.studentTel||'';
+  document.getElementById('ps-route').value=r.route||'전화문의';
+  document.getElementById('ps-want-class').value=r.wantClass||'';
+  document.getElementById('ps-callback-date').value=r.callbackDate||'';
+  document.getElementById('ps-trial-date').value=r.trialDate||'';
+  document.getElementById('ps-trial-time').value=r.trialTime||'';
+  document.getElementById('ps-status').value=r.status||'대기중';
+  document.getElementById('ps-note').value=r.note||'';
+  // 기존 삭제 후 다시 저장 방식
+  savePS(loadPS().filter(x=>x.id!==id));
+  renderProspectiveList();
+  document.querySelector('#page-prospective .card').scrollIntoView({behavior:'smooth'});
+}
+
+// 레벨테스트에서 예비원생 자동 등록
+function addToProspectiveFromLT(student){
+  const data=loadPS();
+  // 이름+연락처 중복 체크
+  const dup=data.find(r=>r.name===student.name&&r.parentTel===student.parentTel);
+  if(dup){
+    // 기존 레코드에 LT 점수 업데이트
+    dup.ltListening=student.ltListening||'';
+    dup.ltReading=student.ltReading||'';
+    dup.ltWriting=student.ltWriting||'';
+    dup.ltSpeaking=student.ltSpeaking||'';
+    savePS(data);
+    return;
+  }
+  const rec={
+    id:'ps_'+Date.now(),
+    date:student.consultDate||today(),
+    name:student.name,
+    school:student.school||'',
+    grade:student.grade||'',
+    parentTel:student.parentTel||'',
+    studentTel:student.studentTel||'',
+    route:'레벨테스트',
+    wantClass:student.assignedClass||'',
+    callbackDate:'',trialDate:'',trialTime:'',
+    status:'대기중',
+    note:student.note||'',
+    ltListening:student.ltListening||'',
+    ltReading:student.ltReading||'',
+    ltWriting:student.ltWriting||'',
+    ltSpeaking:student.ltSpeaking||'',
+  };
+  data.push(rec);
+  data.sort((a,b)=>a.date.localeCompare(b.date));
+  savePS(data);
+}
+
+// 오늘 예비원생 콜백/청강 알림
+function renderTodayPS(){
+  const t=today();
+  const data=loadPS();
+  const callbacks=data.filter(r=>r.callbackDate===t&&r.status!=='등록완료');
+  const trials=data.filter(r=>r.trialDate===t&&r.status!=='등록완료');
+  // 오늘 현황 탭에 예비원생 알림 추가
+  const el=document.getElementById('today-ps-info');
+  if(el){
+    el.innerHTML=[
+      ...callbacks.map(r=>`<div style="font-size:11px;color:#CC0066">📞 ${r.name} 콜백예정</div>`),
+      ...trials.map(r=>`<div style="font-size:11px;color:#185FA5">🎓 ${r.name} 청강예정 ${r.trialTime||''}</div>`),
+    ].join('')||'';
+  }
+}
+
+// ── 시간표 ──────────────────────────
+const DAYS = ['월','화','수','목','금','토'];
+const TYPE_COLORS = {'초등':'#1D9E75','중등':'#185FA5','고등':'#CC0066','기타':'#854F0B'};
+
+let timetableView = 'weekly';
+
+function switchTimetableView(view){
+  timetableView = view;
+  document.getElementById('tv-weekly-section').style.display = view==='weekly'?'block':'none';
+  document.getElementById('tv-teacher-section').style.display = view==='teacher'?'block':'none';
+  document.getElementById('tv-weekly').className = view==='weekly'?'btn-primary':'btn-secondary';
+  document.getElementById('tv-teacher').className = view==='teacher'?'btn-primary':'btn-secondary';
+  document.getElementById('tv-weekly').style.cssText = 'font-size:12px;padding:7px 16px';
+  document.getElementById('tv-teacher').style.cssText = 'font-size:12px;padding:7px 16px';
+  if(view==='weekly') renderWeeklyTimetable();
+  else renderTeacherTimetable();
+}
+
+function normalizeTime(t){
+  // "6:30-8:00" → "6:30-8" / "5-6:30" 그대로 / "시" 제거 / 공백 제거
+  return t.replace(/시/g,'').replace(/\s/g,'').replace(/:00$/,'').replace(/-(\d+):00$/,(m,h)=>'-'+h);
+}
+
+function parseDayTime(timeStr){
+  if(!timeStr) return [];
+  const result = [];
+  const parts = timeStr.match(/([월화수목금토일]+)\(([^)]+)\)/g) || [];
+  for(const part of parts){
+    const m = part.match(/([월화수목금토일]+)\(([^)]+)\)/);
+    if(!m) continue;
+    const days = m[1].split('');
+    const time = normalizeTime(m[2]);
+    for(const day of days){
+      if(DAYS.includes(day)){
+        // 중복 방지
+        if(!result.find(r=>r.day===day&&r.time===time))
+          result.push({day, time});
+      }
+    }
+  }
+  // 패턴 없으면 전체 요일에서 찾기
+  if(result.length===0 && timeStr){
+    DAYS.forEach(day=>{
+      if(timeStr.includes(day)) result.push({day, time: normalizeTime(timeStr)});
+    });
+  }
+  return result;
+}
+
+function getTimeSlot(timeStr){
+  if(!timeStr) return 999;
+  const clean = normalizeTime(timeStr);
+  const m = clean.match(/^(\d+):?(\d*)/);
+  if(!m) return 999;
+  return parseInt(m[1]) + (parseInt(m[2]||'0')/60);
+}
+
+// ── 시간 파싱 공통 함수 ──────────────────────────
+function parseTimeRange(timeStr){
+  const clean = normalizeTime(timeStr);
+  const m = clean.match(/^(\d+):?(\d*)-(\d+):?(\d*)$/);
+  if(!m) return null;
+  let s = parseInt(m[1])+(parseInt(m[2]||'0')/60);
+  let e = parseInt(m[3])+(parseInt(m[4]||'0')/60);
+  // 오후 시간 변환: 12 이하면 +12 (오후 2시 = 14시)
+  if(s < 12) s += 12;
+  if(e < 12) e += 12;
+  // 예: 6:30-8 → 18.5-20
+  return {start:s, end:e};
+}
+
+// ── 30분 슬롯 공통 설정 (24시간 기준) ──────────────────────────
+const SLOT_START = 14.0;  // 14:00 (오후 2시)
+const SLOT_END   = 22.0;  // 22:00 (오후 10시)
+function toSlot(h){ return Math.round((h-SLOT_START)*2); }
+function slotLabel(i){
+  const h = SLOT_START + i*0.5;
+  const hh = Math.floor(h);
+  const mm = (h%1)*60;
+  return `${hh}:${mm===0?'00':'30'}`;
+}
+function totalSlots(){ return (SLOT_END-SLOT_START)*2; }
+
+// ── 타입별 색상 (전역) ──────────────────────────
+function cellColor(type){
+  if(type==='초등') return{bg:'#E1F5EE',border:'#1D9E75',text:'#085041'};
+  if(type==='고등') return{bg:'#FBEAF0',border:'#CC0066',text:'#72243E'};
+  return{bg:'#E6F1FB',border:'#185FA5',text:'#0C447C'};
+}
+const ROOM_ORDER=['3층 1호실','3층 2호실','3층 3호실','3층 4호실','3층 5호실','5층 1호실','5층 2호실','5층 3호실'];
+
+function renderWeeklyTimetable(){
+  const classes = loadClasses();
+  const studentCounts = {};
+  load().filter(s=>s.status==='등록완료').forEach(s=>{
+    if(s.assignedClass) studentCounts[s.assignedClass]=(studentCounts[s.assignedClass]||0)+1;
+  });
+  const assign = autoAssignRooms();
+  const DAYS_ORDER = ['월','화','수','목','금','토'];
+  const roomOrder = ROOM_ORDER;
+
+  // 슬롯×교실×요일 점유 맵 빌드
+  const TS = totalSlots();
+  // grid[slotIdx][roomIdx][dayIdx] = {cls, span, isFirst} | null | 'merged'
+  const grid = Array.from({length:TS},()=>
+    Array.from({length:roomOrder.length},()=>
+      Array(DAYS_ORDER.length).fill(null)
+    )
+  );
+  const noTimeClasses = [];
+
+  classes.forEach(c=>{
+    const room = assign[c.name]||'';
+    const slots = parseDayTime(c.time);
+    if(!slots.length){ noTimeClasses.push(c); return; }
+    const ri = roomOrder.indexOf(room);
+    if(ri<0) return;
+    slots.forEach(({day,time})=>{
+      const di = DAYS_ORDER.indexOf(day);
+      if(di<0) return;
+      const range = parseTimeRange(time);
+      if(!range) return;
+      const s = Math.max(0, toSlot(range.start));
+      const en= Math.min(TS, toSlot(range.end));
+      const span = en-s;
+      if(span<=0) return;
+      for(let i=s;i<en;i++){
+        if(i===s) grid[i][ri][di]={cls:c,span,isFirst:true};
+        else      grid[i][ri][di]='merged';
+      }
+    });
+  });
+
+  // 사용되는 교실만 추출
+  const activeRooms = roomOrder.filter((_,ri)=>
+    DAYS_ORDER.some((_,di)=>
+      [...Array(TS).keys()].some(si=>grid[si][ri][di]!==null)
+    )
+  );
+  const activeRoomIdxs = activeRooms.map(r=>roomOrder.indexOf(r));
+
+  const tbody = document.getElementById('weekly-tbody');
+  if(!activeRooms.length){
+    tbody.innerHTML=`<tr><td colspan="${DAYS_ORDER.length+2}" style="text-align:center;padding:24px;color:var(--sub);font-size:13px">수업시간이 입력된 반이 없습니다.<br>반 관리 탭에서 수업시간을 입력해주세요.</td></tr>`;
+    document.getElementById('no-time-classes').innerHTML='';
+    return;
+  }
+
+  // 주간 시간표 헤더 교실 행 동적 생성
+  const thead = document.querySelector('#weekly-table thead');
+  if(thead){
+    // 기존 교실 서브 행 제거 후 재생성
+    const existingSub = document.getElementById('wt-room-row');
+    if(existingSub) existingSub.remove();
+    const subRow = document.createElement('tr');
+    subRow.id='wt-room-row';
+    subRow.innerHTML=`<th style="background:#2D4A6E;color:#fff;padding:5px 3px;font-size:9px;width:44px;text-align:center;border:0.5px solid #1a3a5c">시간</th>`
+      + activeRooms.map(r=>{
+          const fl=r.startsWith('5층')?'5층':'3층';
+          const num=r.replace(/[35]층 /,'');
+          return`<th colspan="${DAYS_ORDER.length}" style="background:#3E6B9F;color:#fff;padding:4px;font-size:9px;text-align:center;border:0.5px solid #1a3a5c">${num} <span style="opacity:0.7">${fl}</span></th>`;
+        }).join('');
+    // 요일 서브 행
+    const dayRow = document.createElement('tr');
+    dayRow.id='wt-day-row';
+    dayRow.innerHTML=`<th style="background:#2D4A6E;border:0.5px solid #1a3a5c"></th>`
+      + activeRooms.map(()=>
+          DAYS_ORDER.map(d=>`<th style="background:${DAY_COLORS[d]||'#888'};color:#fff;padding:4px 2px;font-size:10px;text-align:center;border:0.5px solid rgba(0,0,0,0.2);min-width:55px">${d}</th>`).join('')
+        ).join('');
+    const existingDay = document.getElementById('wt-day-row');
+    if(existingDay) existingDay.remove();
+    thead.appendChild(subRow);
+    thead.appendChild(dayRow);
+  }
+
+  let html='';
+  for(let si=0;si<TS;si++){
+    const label=slotLabel(si);
+    const isHalf=(SLOT_START+si*0.5)%1!==0;
+
+    // 이 슬롯에 실제 내용이 있는지 체크
+    const hasAny = activeRoomIdxs.some(ri=>
+      DAYS_ORDER.some((_,di)=>grid[si][ri][di]!==null)
+    );
+    // 빈 슬롯 축소 처리
+    if(!hasAny){
+      const prevHas = si>0 && activeRoomIdxs.some(ri=>DAYS_ORDER.some((_,di)=>grid[si-1][ri][di]!==null));
+      const nextHas = si<TS-1 && activeRoomIdxs.some(ri=>DAYS_ORDER.some((_,di)=>grid[si+1][ri][di]!==null));
+      if(!prevHas && !nextHas && isHalf) continue;
+    }
+
+    const labelStyle = isHalf
+      ? 'font-size:8px;color:#ccc;border-top:0.5px dashed #ececec;text-align:right;padding-right:3px'
+      : 'font-size:9px;color:#2D4A6E;font-weight:500;border-top:1px solid #d0d8e8;text-align:right;padding-right:3px';
+    html+=`<tr><td style="background:#f0f4f9;${labelStyle};vertical-align:top;width:44px;white-space:nowrap">${label}</td>`;
+
+    activeRoomIdxs.forEach(ri=>{
+      DAYS_ORDER.forEach((_,di)=>{
+        const cell=grid[si][ri][di];
+        if(cell==='merged'){
+          // rowspan으로 처리됨 — td 생략
+        } else if(cell===null){
+          html+=`<td style="background:#fafafa;border:0.5px solid #f0f0f0;min-width:55px;height:16px"></td>`;
+        } else {
+          // isFirst — rowspan 적용
+          const {bg,border:bd,text}=cellColor(cell.cls.type);
+          const cur=studentCounts[cell.cls.name]||0;
+          const max=cell.cls.quota||9;
+          const full=cur>=max;
+          const warn=cur>=max*0.8&&!full;
+          html+=`<td rowspan="${cell.span}" style="background:${bg};border:0.5px solid ${bd};border-left:2px solid ${bd};padding:2px 3px;vertical-align:top;cursor:pointer;min-width:55px" onclick="showQuotaDetail('${cell.cls.name}')">
+            <div style="font-size:10px;font-weight:600;color:${text};line-height:1.2">${cell.cls.name}</div>
+            <div style="font-size:8px;color:${text};opacity:0.75">${cell.cls.teacher||''}</div>
+            <div style="font-size:8px;color:${full?'#A32D2D':warn?'#854F0B':text};opacity:0.85">${cur}/${max}명${full?' 🚫':warn?' ⚠️':''}</div>
+          </td>`;
+        }
+      });
+    });
+    html+='</tr>';
+  }
+
+  tbody.innerHTML = html || `<tr><td colspan="${activeRooms.length*DAYS_ORDER.length+1}" style="text-align:center;padding:24px;color:var(--sub)">시간표 데이터가 없습니다</td></tr>`;
+
+  // 시간표 없는 반 표시
+  const noTimeEl = document.getElementById('no-time-classes');
+  const unassigned = classes.filter(c=>c.time && !assign[c.name] && parseDayTime(c.time).length>0);
+  const allMissing = [...noTimeClasses, ...unassigned.filter(c=>!noTimeClasses.find(x=>x.name===c.name))];
+  noTimeEl.innerHTML = allMissing.length?`<div style="background:#f9f9f9;border-radius:8px;padding:10px 14px">
+    <div style="font-size:11px;color:#aaa;margin-bottom:8px">⏰ 수업시간 또는 교실 미입력 반</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      ${allMissing.map(c=>`<span style="background:#fff;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;color:#666">${c.name}${c.teacher?' · '+c.teacher:''}</span>`).join('')}
+    </div>
+  </div>`:'';
+}
+
+function renderTeacherTimetable(){
+  const classes = loadClasses();
+  const studentCounts = {};
+  load().filter(s=>s.status==='등록완료').forEach(s=>{
+    if(s.assignedClass) studentCounts[s.assignedClass]=(studentCounts[s.assignedClass]||0)+1;
+  });
+
+  // 선생님 목록 추출
+  const teachers = [...new Set(classes.map(c=>c.teacher).filter(Boolean))].sort();
+  const filterEl = document.getElementById('teacher-filter');
+  const cur = filterEl.value;
+  filterEl.innerHTML = '<option value="">전체 선생님</option>' +
+    teachers.map(t=>`<option ${cur===t?'selected':''}>${t}</option>`).join('');
+
+  const selectedTeacher = filterEl.value;
+  const targetClasses = selectedTeacher ? classes.filter(c=>c.teacher===selectedTeacher) : classes;
+
+  const content = document.getElementById('teacher-timetable-content');
+  if(!teachers.length){
+    content.innerHTML='<div style="text-align:center;padding:24px;color:var(--sub);font-size:13px">담임 선생님이 입력된 반이 없습니다.<br>반 관리 탭에서 담임 선생님을 입력해주세요.</div>';
+    return;
+  }
+
+  // 선생님별로 그룹
+  const teacherGroups = {};
+  if(selectedTeacher){
+    teacherGroups[selectedTeacher] = targetClasses;
+  } else {
+    classes.forEach(c=>{
+      if(c.teacher){
+        if(!teacherGroups[c.teacher]) teacherGroups[c.teacher]=[];
+        teacherGroups[c.teacher].push(c);
+      }
+    });
+  }
+
+  content.innerHTML = Object.entries(teacherGroups).sort((a,b)=>a[0].localeCompare(b[0])).map(([teacher, tClasses])=>{
+    const dayMap = {'월':[],'화':[],'수':[],'목':[],'금':[],'토':[]};
+    tClasses.forEach(c=>{
+      const slots = parseDayTime(c.time);
+      slots.forEach(({day,time})=>{ if(dayMap[day]) dayMap[day].push({...c,todayTime:time}); });
+    });
+    DAYS.forEach(day=>dayMap[day].sort((a,b)=>getTimeSlot(a.todayTime)-getTimeSlot(b.todayTime)));
+
+    // 총 수업 시간 계산
+    const totalSlots = tClasses.reduce((sum,c)=>sum+parseDayTime(c.time).length,0);
+    const totalStudents = tClasses.reduce((sum,c)=>sum+(studentCounts[c.name]||0),0);
+
+    const hasAny = DAYS.some(day=>dayMap[day].length>0);
+    return`<div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:10px 14px;background:#FFF0F5;border-radius:10px;border-left:4px solid var(--pink)">
+        <div style="font-size:14px;font-weight:500;color:var(--pink)">👩‍🏫 ${teacher}</div>
+        <div style="font-size:12px;color:#888">담당 반 ${tClasses.length}개 · 주 ${totalSlots}회 · 총 ${totalStudents}명</div>
+      </div>
+      ${hasAny?`<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px">
+        ${DAYS.map(day=>`<div>
+          <div style="text-align:center;padding:4px;background:${DAY_COLORS[day]};color:#fff;border-radius:6px 6px 0 0;font-size:12px;font-weight:500">${day}요일</div>
+          <div style="border:1px solid #e8e8e8;border-top:none;border-radius:0 0 6px 6px;min-height:40px;padding:4px">
+            ${dayMap[day].length?dayMap[day].map(c=>{
+              const cur=studentCounts[c.name]||0;
+              const color=TYPE_COLORS[c.type]||'#888';
+              return`<div style="background:${color}15;border-left:3px solid ${color};border-radius:4px;padding:5px 7px;margin-bottom:3px">
+                <div style="font-size:12px;font-weight:500;color:${color}">${c.name}</div>
+                <div style="font-size:10px;color:#888">${c.todayTime}</div>
+                <div style="font-size:10px;color:#aaa">${cur}/${c.quota}명</div>
+              </div>`;
+            }).join(''):'<div style="text-align:center;padding:8px;font-size:11px;color:#ccc">—</div>'}
+          </div>
+        </div>`).join('')}
+      </div>`:`<div style="color:var(--sub);font-size:12px;padding:8px">수업시간이 입력된 반이 없습니다.</div>`}
+    </div>`;
+  }).join('') || '<div style="text-align:center;padding:24px;color:var(--sub)">표시할 데이터가 없습니다.</div>';
+}
+
+// ── 교실 설정 ──────────────────────────
+const ROOMS = [
+  {id:'3층 1호실', floor:3, num:1, capacity:9,  type:'중형', elementaryOnly:false},
+  {id:'3층 2호실', floor:3, num:2, capacity:9,  type:'중형', elementaryOnly:false},
+  {id:'3층 3호실', floor:3, num:3, capacity:14, type:'대형', elementaryOnly:false},
+  {id:'3층 4호실', floor:3, num:4, capacity:6,  type:'소형', elementaryOnly:false},
+  {id:'3층 5호실', floor:3, num:5, capacity:9,  type:'중형', elementaryOnly:false},
+  {id:'5층 1호실', floor:5, num:1, capacity:9,  type:'중형', elementaryOnly:false},
+  {id:'5층 2호실', floor:5, num:2, capacity:9,  type:'중형', elementaryOnly:false},
+  {id:'5층 3호실', floor:5, num:3, capacity:14, type:'대형', elementaryOnly:false},
+];
+const ROOM_KEY = 'yujeonglish_room_assign';
+function loadRoomAssign(){try{return JSON.parse(localStorage.getItem(ROOM_KEY)||'{}')}catch{return{}}}
+function saveRoomAssign(d){localStorage.setItem(ROOM_KEY,JSON.stringify(d))}
+
+// 교실 자동 배치 (반 인원 + 초등부 규칙 고려)
+function autoAssignRooms(){
+  const classes = loadClasses();
+  const assign = loadRoomAssign();
+
+  classes.forEach(c=>{
+    // 1순위: DEFAULT_CLASSES에 room이 지정된 경우
+    const def = DEFAULT_CLASSES.find(d=>d.name===c.name);
+    if(def && def.room){
+      assign[c.name] = def.room;
+      return;
+    }
+    // 2순위: 이미 수동 배정된 경우 유지
+    if(assign[c.name]) return;
+    // 3순위: 자동 배치
+    const studentCounts = {};
+    load().filter(s=>s.status==='등록완료').forEach(s=>{
+      if(s.assignedClass) studentCounts[s.assignedClass]=(studentCounts[s.assignedClass]||0)+1;
+    });
+    const cnt = studentCounts[c.name]||0;
+    const isElementary = c.type==='초등';
+    const suitable = ROOMS.filter(r=>{
+      if(isElementary && r.floor!==3) return false;
+      if(r.capacity < cnt) return false;
+      return true;
+    });
+    suitable.sort((a,b)=>a.capacity-b.capacity);
+    if(suitable.length > 0) assign[c.name] = suitable[0].id;
+  });
+  saveRoomAssign(assign);
+  return assign;
+}
+
+// 특정 시간에 사용 중인 교실 조회
+function getOccupiedRooms(date, timeStr){
+  const assign = loadRoomAssign();
+  const classes = loadClasses();
+  const occupied = new Set();
+
+  // 정규 수업 중인 교실
+  if(date){
+    const dayNames=['일','월','화','수','목','금','토'];
+    const dayKr = dayNames[new Date(date).getDay()];
+    classes.forEach(c=>{
+      const slots = parseDayTime(c.time);
+      if(slots.some(s=>s.day===dayKr) && assign[c.name]){
+        occupied.add(assign[c.name]);
+      }
+    });
+  }
+
+  // 보강 수업 중인 교실
+  loadMakeup().filter(m=>m.date===date&&m.status==='예정'&&m.room).forEach(m=>{
+    occupied.add(m.room);
+  });
+
+  return occupied;
+}
+
+function findEmptyRooms(){
+  const date = document.getElementById('mk-date').value;
+  const time = document.getElementById('mk-time').value;
+  const cls = document.getElementById('mk-class').value;
+  const studentCounts = {};
+  load().filter(s=>s.status==='등록완료').forEach(s=>{
+    if(s.assignedClass) studentCounts[s.assignedClass]=(studentCounts[s.assignedClass]||0)+1;
+  });
+  const cnt = cls ? (studentCounts[cls]||0) : 0;
+  const clsData = loadClasses().find(c=>c.name===cls);
+  const isElementary = clsData?.type==='초등';
+
+  if(!date){
+    document.getElementById('mk-room-grid').innerHTML='<div style="font-size:12px;color:#aaa">날짜를 입력해주세요</div>';
+    return;
+  }
+
+  const occupied = getOccupiedRooms(date, time);
+  const emptyRooms = ROOMS.filter(r=>{
+    if(!occupied.has(r.id)){
+      if(isElementary && r.floor!==3) return false;
+      if(cnt>0 && r.capacity < cnt) return false;
+      return true;
+    }
+    return false;
+  });
+
+  const grid = document.getElementById('mk-room-grid');
+  if(!emptyRooms.length){
+    grid.innerHTML='<div style="font-size:12px;color:#A32D2D;font-weight:500">⚠️ 해당 시간에 빈 교실이 없습니다</div>';
+    return;
+  }
+
+  grid.innerHTML = emptyRooms.map(r=>`
+    <div onclick="selectRoom('${r.id}')"
+      style="padding:8px 14px;border-radius:8px;border:1px solid var(--border);cursor:pointer;background:#fff;transition:all 0.15s;font-size:12px"
+      onmouseover="this.style.background='#FFF0F5';this.style.borderColor='#CC0066'"
+      onmouseout="this.style.background='#fff';this.style.borderColor='var(--border)'">
+      <div style="font-weight:500;color:#333">${r.id}</div>
+      <div style="font-size:10px;color:var(--sub);margin-top:2px">${r.type} · 최대 ${r.capacity}명 ${r.floor===3?'(3층)':'(5층)'}</div>
+    </div>`).join('');
+  updateMkSmsPreview();
+}
+
+function selectRoom(roomId){
+  document.getElementById('mk-room').value = roomId;
+  // 시각적 선택 표시
+  document.querySelectorAll('#mk-room-grid > div').forEach(el=>{
+    const selected = el.onclick.toString().includes(roomId);
+    el.style.background = selected ? '#FFF0F5' : '#fff';
+    el.style.borderColor = selected ? '#CC0066' : 'var(--border)';
+    el.style.fontWeight = selected ? '500' : 'normal';
+  });
+  updateMkSmsPreview();
+}
+
+function updateMkSmsPreview(){
+  const name = document.getElementById('mk-name').value||'(학생이름)';
+  const date = document.getElementById('mk-date').value||'(날짜)';
+  const time = document.getElementById('mk-time').value||'(시간)';
+  const cls = document.getElementById('mk-class').value||'';
+  const room = document.getElementById('mk-room').value||'(교실 미정)';
+  const dateStr = date.replace(/-/g,'.');
+  const preview =
+`안녕하세요, 이유정영어학원 Yujeonglish입니다.
+${name} 학생의 보강 수업을 안내드립니다.
+
+📅 일시: ${dateStr} ${time}
+📚 반: ${cls||'—'}
+🏫 교실: ${room}
+
+수업 준비물을 챙겨오도록 안내 부탁드립니다.
+감사합니다.`;
+  document.getElementById('mk-sms-preview').textContent = preview;
+}
+
+['mk-name','mk-date','mk-time','mk-class','mk-room','mk-note'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('input', updateMkSmsPreview);
+});
+const mkClassEl = document.getElementById('mk-class');
+if(mkClassEl) mkClassEl.addEventListener('change',()=>{autoFillMakeup();findEmptyRooms();updateMkSmsPreview();});
+const mkDateEl = document.getElementById('mk-date');
+if(mkDateEl) mkDateEl.addEventListener('change',()=>{findEmptyRooms();updateMkSmsPreview();});
+
+function autoFillMakeup(){
+  const cls = document.getElementById('mk-class').value;
+  const c = loadClasses().find(x=>x.name===cls);
+  if(c){
+    document.getElementById('mk-teacher').value = c.teacher||'';
+    // 배정 교실 자동 채우기
+    const assign = loadRoomAssign();
+    if(assign[cls]) document.getElementById('mk-room').value = assign[cls];
+  }
+}
+
+function mkAutoComplete(){
+  const q = document.getElementById('mk-name').value.trim().toLowerCase();
+  const box = document.getElementById('mk-suggest');
+  if(!q){box.innerHTML='';return;}
+  const students = load().filter(s=>s.name.toLowerCase().includes(q)).slice(0,6);
+  if(!students.length){box.innerHTML='';return;}
+  box.innerHTML=`<div style="position:absolute;z-index:50;background:#fff;border:1px solid var(--border);border-radius:8px;width:100%;box-shadow:0 4px 12px rgba(0,0,0,0.1);max-height:180px;overflow-y:auto">
+    ${students.map(s=>`<div onclick="mkSelectStudent('${s.id}')" style="padding:8px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid #f5f5f5" onmouseover="this.style.background='#FFF0F5'" onmouseout="this.style.background='#fff'">
+      <b>${s.name}</b> <span style="color:var(--sub)">${s.assignedClass||''}</span>
+    </div>`).join('')}
+  </div>`;
+}
+
+function mkSelectStudent(id){
+  const s = load().find(x=>x.id===id);
+  if(!s)return;
+  document.getElementById('mk-name').value = s.name;
+  document.getElementById('mk-class').value = s.assignedClass||'';
+  document.getElementById('mk-parent-tel').value = s.parentTel||'';
+  document.getElementById('mk-student-tel').value = s.studentTel||'';
+  document.getElementById('mk-suggest').innerHTML='';
+  autoFillMakeup();
+  findEmptyRooms();
+  updateMkSmsPreview();
+}
+
+// ── 보강 데이터 ──────────────────────────
+const MK_KEY = 'yujeonglish_makeup';
+function loadMakeup(){try{return JSON.parse(localStorage.getItem(MK_KEY)||'[]')}catch{return[]}}
+function saveMakeup(d){localStorage.setItem(MK_KEY,JSON.stringify(d))}
+
+function saveMakeupRecord(){
+  const name = document.getElementById('mk-name').value.trim();
+  const date = document.getElementById('mk-date').value;
+  const time = document.getElementById('mk-time').value.trim();
+  if(!name||!date||!time){alert('학생 이름, 날짜, 시간은 필수입니다.');return;}
+  const rec = {
+    id:'mk_'+Date.now(),
+    date, time,
+    name,
+    cls: document.getElementById('mk-class').value,
+    teacher: document.getElementById('mk-teacher').value,
+    room: document.getElementById('mk-room').value,
+    parentTel: document.getElementById('mk-parent-tel').value,
+    studentTel: document.getElementById('mk-student-tel').value,
+    sms: document.getElementById('mk-sms').value,
+    note: document.getElementById('mk-note').value,
+    status: '예정',
+    smsSentPrev: false,
+    smsSentDay: false,
+  };
+  const data = loadMakeup();
+  data.unshift(rec);
+  saveMakeup(data);
+  const msg = document.getElementById('mk-msg');
+  msg.textContent=`✓ ${name} 학생 보강 일정 저장 완료!`;
+  setTimeout(()=>msg.textContent='',3000);
+  clearMakeupForm();
+  renderMakeupList();
+  renderRoomStatus();
+  renderToday();
+}
+
+function clearMakeupForm(){
+  ['mk-name','mk-time','mk-note','mk-parent-tel','mk-student-tel','mk-teacher'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  document.getElementById('mk-date').value=today();
+  document.getElementById('mk-class').value='';
+  document.getElementById('mk-room').value='';
+  document.getElementById('mk-sms').selectedIndex=0;
+  document.getElementById('mk-suggest').innerHTML='';
+  document.getElementById('mk-sms-preview').textContent='';
+  document.getElementById('mk-room-grid').innerHTML='<div style="font-size:12px;color:#aaa">날짜와 시간을 입력하면 빈 교실이 표시됩니다</div>';
+}
+
+function renderMakeupList(){
+  const q=(document.getElementById('mk-search')?.value||'').toLowerCase();
+  const dt=document.getElementById('mk-filter-date')?.value||'';
+  const st=document.getElementById('mk-filter-status')?.value||'';
+  const data=loadMakeup().filter(r=>{
+    const nOk=!q||(r.name||'').toLowerCase().includes(q)||(r.cls||'').toLowerCase().includes(q);
+    const dOk=!dt||r.date===dt;
+    const sOk=!st||r.status===st;
+    return nOk&&dOk&&sOk;
+  }).sort((a,b)=>a.date.localeCompare(b.date));
+  const t=today();
+  const tbody=document.getElementById('mk-list-tbody');
+  tbody.innerHTML=data.length?data.map(r=>`<tr style="${r.date===t?'background:#FFFDE7':''}">
+    <td style="${r.date===t?'color:#854F0B;font-weight:500':''}${r.date<t&&r.status==='예정'?'color:#A32D2D':''}">${fmt(r.date)}${r.date===t?' 🔔':''}</td>
+    <td style="font-size:11px">${r.time||'—'}</td>
+    <td><b>${r.name}</b></td>
+    <td style="font-size:11px">${r.cls||'—'}</td>
+    <td><span style="font-size:11px;background:#EEF3F9;padding:2px 7px;border-radius:4px">${r.room||'—'}</span></td>
+    <td style="font-size:11px">${r.teacher||'—'}</td>
+    <td style="font-size:11px">${r.parentTel||'—'}</td>
+    <td>
+      ${r.smsSentDay?'<span class="badge badge-registered" style="font-size:10px">발송완료</span>':
+        r.sms!=='N'?`<button class="btn-pink-sm" style="font-size:11px" onclick="sendMakeupSms('${r.id}','day')">📱 발송</button>`:'<span style="font-size:10px;color:#aaa">발송안함</span>'}
+    </td>
+    <td>
+      <select onchange="updateMakeupStatus('${r.id}',this.value)" style="font-size:11px;padding:2px 5px;border:1px solid var(--border);border-radius:4px;font-family:'Noto Sans KR',sans-serif">
+        ${['예정','완료','취소'].map(s=>`<option ${r.status===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+    </td>
+    <td style="font-size:11px;color:var(--sub)">${r.note||'—'}</td>
+    <td><button class="btn-danger" onclick="deleteMakeup('${r.id}')">삭제</button></td>
+  </tr>`).join(''):'<tr><td colspan="11" style="text-align:center;padding:24px;color:var(--sub)">보강 일정이 없습니다</td></tr>';
+}
+
+function updateMakeupStatus(id,status){
+  const data=loadMakeup();
+  const idx=data.findIndex(r=>r.id===id);
+  if(idx>=0){data[idx].status=status;saveMakeup(data);}
+  renderMakeupList();renderRoomStatus();renderToday();
+}
+
+function deleteMakeup(id){
+  if(!confirm('삭제하시겠습니까?'))return;
+  saveMakeup(loadMakeup().filter(r=>r.id!==id));
+  renderMakeupList();renderRoomStatus();renderToday();
+}
+
+// 보강 문자 발송
+async function sendMakeupSms(id, type){
+  const cfg=loadAligoConfig();
+  if(!cfg.id||!cfg.key||!cfg.sender){alert('알리고 설정을 먼저 저장해주세요.');return;}
+  const data=loadMakeup();
+  const r=data.find(x=>x.id===id);
+  if(!r)return;
+  const tel=r.parentTel||r.studentTel;
+  if(!tel){alert('연락처가 없습니다.');return;}
+  const dateStr=r.date.replace(/-/g,'.');
+  const msg=`안녕하세요, 이유정영어학원 Yujeonglish입니다.\n${r.name} 학생의 보강 수업을 안내드립니다.\n\n📅 일시: ${dateStr} ${r.time}\n📚 반: ${r.cls||'—'}\n🏫 교실: ${r.room||'—'}\n\n수업 준비물을 챙겨오도록 안내 부탁드립니다.\n감사합니다.`;
+  if(!confirm(`[${r.name}] 학부모님께 보강 안내 문자를 발송하시겠습니까?\n수신: ${tel}`))return;
+  try{
+    const form=new FormData();
+    form.append('key',cfg.key);form.append('user_id',cfg.id);
+    form.append('sender',cfg.sender);form.append('receiver',tel.replace(/-/g,''));
+    form.append('msg',msg);form.append('msg_type','LMS');
+    const res=await fetch('https://apis.aligo.in/send/',{method:'POST',body:form});
+    const result=await res.json();
+    if(result.result_code==='1'){
+      const idx=data.findIndex(x=>x.id===id);
+      if(idx>=0){data[idx].smsSentDay=true;saveMakeup(data);}
+      alert('✅ 문자 발송 완료!');renderMakeupList();
+    } else { alert('발송 실패: '+result.message); }
+  }catch(e){alert('오류: '+e.message);}
+}
+
+// 교실 현황 렌더링
+function renderRoomStatus(){
+  const assign = autoAssignRooms();
+  const studentCounts = {};
+  load().filter(s=>s.status==='등록완료').forEach(s=>{
+    if(s.assignedClass) studentCounts[s.assignedClass]=(studentCounts[s.assignedClass]||0)+1;
+  });
+  const classes = loadClasses();
+
+  // 교실별 반 목록
+  const roomClasses = {};
+  classes.forEach(c=>{
+    const r = assign[c.name];
+    if(r){ if(!roomClasses[r])roomClasses[r]=[]; roomClasses[r].push(c); }
+  });
+
+  function renderFloorGrid(floorRooms, elId){
+    const el = document.getElementById(elId);
+    if(!el)return;
+    el.innerHTML = floorRooms.map(r=>{
+      const cls = roomClasses[r.id]||[];
+      const totalStudents = cls.reduce((s,c)=>s+(studentCounts[c.name]||0),0);
+      const isUsed = cls.length>0;
+      return`<div style="background:${isUsed?'#FFF0F5':'#f9f9f9'};border:1px solid ${isUsed?'#f5c0d8':'#eee'};border-radius:8px;padding:10px 12px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:12px;font-weight:500;color:${isUsed?'#CC0066':'#888'}">${r.id}</span>
+          <span style="font-size:10px;color:var(--sub)">${r.type} · 최대 ${r.capacity}명</span>
+        </div>
+        ${cls.length?cls.map(c=>`<div style="font-size:11px;padding:3px 7px;background:#fff;border-radius:4px;margin-bottom:3px;border-left:2px solid #CC0066">
+          ${c.name} ${c.teacher?'('+c.teacher+')':''} · ${studentCounts[c.name]||0}명 · ${c.time||'시간미정'}
+        </div>`).join(''):'<div style="font-size:11px;color:#bbb">배정된 반 없음</div>'}
+      </div>`;
+    }).join('');
+  }
+
+  renderFloorGrid(ROOMS.filter(r=>r.floor===3), 'room-3f-grid');
+  renderFloorGrid(ROOMS.filter(r=>r.floor===5), 'room-5f-grid');
+}
+
+// 오늘 현황 시간표 (표 형식으로 업데이트)
+function renderTodayTimetable(){
+  const dayNames=['일','월','화','수','목','금','토'];
+  const dayColors=['','#1a3a5c','#CC0066','#1D9E75','#BA7517','#185FA5','#7B1450','#444'];
+  const now=new Date();
+  const dayKr=dayNames[now.getDay()];
+  const classes=loadClasses();
+  const assign=autoAssignRooms();
+
+  // 헤더 업데이트
+  const titleEl=document.getElementById('today-timetable-title');
+  const dayEl=document.getElementById('today-dayname');
+  const colHeader=document.getElementById('today-col-header');
+  if(titleEl) titleEl.textContent=`📅 오늘(${dayKr}요일) 시간표`;
+  if(dayEl) dayEl.textContent=`${now.getMonth()+1}월 ${now.getDate()}일`;
+  if(colHeader){
+    colHeader.textContent=`${dayKr}요일`;
+    colHeader.style.background=dayColors[now.getDay()]||'#1a3a5c';
+  }
+
+  const studentCounts={};
+  load().filter(s=>s.status==='등록완료').forEach(s=>{
+    if(s.assignedClass)studentCounts[s.assignedClass]=(studentCounts[s.assignedClass]||0)+1;
+  });
+
+  // 오늘 수업 항목 수집
+  const entries=[];
+  classes.forEach(c=>{
+    parseDayTime(c.time).forEach(({day,time})=>{
+      if(day===dayKr) entries.push({cls:c, time, room:assign[c.name]||''});
+    });
+  });
+
+  const tbody=document.getElementById('today-timetable-tbody');
+  const empty=document.getElementById('today-timetable-empty');
+  if(!entries.length){
+    if(tbody)tbody.innerHTML='';
+    if(empty)empty.style.display='block';
+    return;
+  }
+  if(empty)empty.style.display='none';
+
+  // 교실 목록
+  const roomOrder=ROOM_ORDER;
+  const activeRooms = roomOrder.filter(r=>entries.some(e=>e.room===r));
+  if(!activeRooms.length){
+    tbody.innerHTML=`<tr><td colspan="3" style="text-align:center;padding:16px;color:var(--sub)">교실 배정이 필요합니다</td></tr>`;
+    return;
+  }
+
+  // 슬롯×교실 점유 맵 구성 (전역 toSlot, parseTimeRange 사용)
+  const TS2 = totalSlots();
+  const grid = Array.from({length:TS2}, ()=>Array(activeRooms.length).fill(null));
+
+  entries.forEach(e=>{
+    const ri = activeRooms.indexOf(e.room);
+    if(ri<0) return;
+    const range = parseTimeRange(e.time);
+    if(!range) return;
+    const s = Math.max(0, toSlot(range.start));
+    const en= Math.min(TS2, toSlot(range.end));
+    const span = en - s;
+    if(span<=0) return;
+    for(let i=s; i<en; i++){
+      if(i===s) grid[i][ri] = {cls:e.cls, span, isFirst:true};
+      else      grid[i][ri] = 'merged';
+    }
+  });
+
+  // 홀수/짝수 시간 배경
+  const hourBg = (slotIdx) => {
+    const h = Math.floor(SLOT_START + slotIdx*0.5);
+    return h%2===0 ? '#fafafa':'#ffffff';
+  };
+
+  let html='';
+  for(let si=0; si<TS2; si++){
+    const label = slotLabel(si);
+    const isHalfHour = (SLOT_START + si*0.5)%1 !== 0;
+    const labelStyle = isHalfHour
+      ? 'font-size:9px;color:#ccc;border-top:0.5px dashed #e8e8e8'
+      : 'font-size:10px;color:#2D4A6E;font-weight:500;border-top:0.5px solid #d0d8e8';
+
+    const hasContent = activeRooms.some((_,ri)=>grid[si][ri]!==null);
+    if(!hasContent && isHalfHour){
+      const prevEmpty = si===0 || !activeRooms.some((_,ri)=>grid[si-1][ri]!==null);
+      const nextEmpty = si===TS2-1 || !activeRooms.some((_,ri)=>grid[si+1][ri]!==null);
+      if(prevEmpty && nextEmpty) continue;
+    }
+
+    html += '<tr>';
+    html += `<td style="background:#f0f4f9;padding:0 4px;text-align:right;vertical-align:top;white-space:nowrap;width:44px;${labelStyle}">${label}</td>`;
+
+    activeRooms.forEach((room,ri)=>{
+      const cell = grid[si][ri];
+      if(cell==='merged'){
+        // rowspan으로 처리됨 — td 생략
+      } else if(cell===null){
+        html+=`<td style="background:${hourBg(si)};border:0.5px solid #f0f0f0;padding:0;height:18px;min-width:80px"></td>`;
+      } else if(cell.isFirst){
+        const {bg,border,text}=cellColor(cell.cls.type);
+        const cur=studentCounts[cell.cls.name]||0;
+        const max=cell.cls.quota||9;
+        const full=cur>=max;
+        const warn=cur>=max*0.8&&!full;
+        html+=`<td rowspan="${cell.span}" style="background:${bg};border:0.5px solid ${border};border-left:3px solid ${border};padding:3px 4px;vertical-align:top;cursor:pointer;min-width:80px" onclick="showQuotaDetail('${cell.cls.name}')">
+          <div style="font-size:11px;font-weight:600;color:${text};line-height:1.2">${cell.cls.name}</div>
+          <div style="font-size:9px;color:${text};opacity:0.75;margin-top:1px">${cell.cls.teacher||''}</div>
+          <div style="font-size:9px;color:${full?'#A32D2D':warn?'#854F0B':text};opacity:0.85;margin-top:1px">${cur}/${max}명${full?' 🚫':warn?' ⚠️':''}</div>
+        </td>`;
+      }
+    });
+    html += '</tr>';
+  }
+
+  // 교실 미배정 항목
+  const unassigned=entries.filter(e=>!e.room);
+  if(unassigned.length){
+    html+=`<tr><td colspan="${activeRooms.length+1}" style="padding:5px 8px;border-top:1px solid #f0f0f0;background:#fff8f0">
+      <span style="font-size:10px;color:#aaa">교실 미배정: </span>
+      ${unassigned.map(e=>{
+        const {bg,border:bd,text}=cellColor(e.cls.type);
+        return`<span style="background:${bg};border-left:2px solid ${bd};border-radius:3px;padding:2px 6px;font-size:10px;color:${text};font-weight:500;margin-right:3px">${e.cls.name}</span>`;
+      }).join('')}
+    </td></tr>`;
+  }
+
+  // 테이블 헤더 교실 컬럼 동적 업데이트
+  const thead = document.querySelector('#today-timetable-table thead tr');
+  if(thead){
+    // 기존 교실 헤더 제거 후 재생성
+    while(thead.children.length > 2) thead.removeChild(thead.lastChild);
+    const colH = document.getElementById('today-col-header');
+    if(colH) colH.setAttribute('colspan', activeRooms.length);
+    // 교실명 서브 행 추가
+    let subRow = document.getElementById('tt-room-row');
+    if(!subRow){
+      subRow = document.createElement('tr');
+      subRow.id='tt-room-row';
+      thead.parentNode.insertBefore(subRow, thead.nextSibling);
+    }
+    subRow.innerHTML=`<th style="background:#2D4A6E;color:#fff;padding:4px;font-size:9px;width:44px;text-align:center;border:0.5px solid #1a3a5c">시간</th>`
+      + activeRooms.map(r=>{
+          const floor=r.startsWith('5층')?'5층':'3층';
+          const num=r.replace(/[35]층 /,'');
+          return`<th style="background:#3E6B9F;color:#fff;padding:4px 2px;font-size:9px;text-align:center;border:0.5px solid #1a3a5c;min-width:70px">${num}<br><span style="font-size:8px;opacity:0.75">${floor}</span></th>`;
+        }).join('');
+  }
+
+  tbody.innerHTML = html || `<tr><td colspan="${activeRooms.length+1}" style="text-align:center;padding:16px;color:var(--sub)">오늘 수업 없음</td></tr>`;
+}
+
+// ── 초기화 ──────────────────────────
+document.getElementById('header-date').textContent=new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'});
+document.getElementById('c-consult-date').value=today();
+document.getElementById('wt-date').value=today();
+document.getElementById('lt2-date').value=today();
+document.getElementById('cl-date').value=today();
+document.getElementById('rs-date').value=today();
+document.getElementById('ps-date').value=today();
+document.getElementById('mk-date').value=today();
+
+// ── 시간표 강제 동기화 (파일 열 때마다 DEFAULT 기준으로 시간·담임 업데이트) ──
+(function syncClassesFromDefault(){
+  const saved = JSON.parse(localStorage.getItem(CLASS_KEY)||'null');
+  if(!saved){
+    saveClasses(DEFAULT_CLASSES.map(c=>({...c})));
+    return;
+  }
+  let changed = false;
+  // DEFAULT에 있는 모든 반의 시간표·담임을 강제 덮어씀
+  DEFAULT_CLASSES.forEach(def=>{
+    const idx = saved.findIndex(c=>c.name===def.name);
+    if(idx>=0){
+      saved[idx].time = def.time;        // 시간표 항상 덮어씀
+      if(def.teacher) saved[idx].teacher = def.teacher; // 담임 덮어씀
+      changed = true;
+    } else {
+      saved.push({...def});
+      changed = true;
+    }
+  });
+  if(changed) saveClasses(saved);
+})();
+
+refreshAllClassSelects();
+refreshWordTestClassSelects();
+refreshLT2ClassSelects();
+autoAssignRooms(); // 교실 자동 배치 초기화
+renderToday();
+renderTodayPS();
+
+function refreshMakeupClassSelect(){
+  const html=getClassOptions();
+  const el=document.getElementById('mk-class');
+  if(!el)return;
+  const cur=el.value;
+  el.innerHTML='<option value="">선택</option>'+html.replace('<option value="">선택</option>','');
+  if(cur)el.value=cur;
+}
+
+function refreshPSClassSelect(){
+  const html=getClassOptions();
+  const el=document.getElementById('ps-want-class');
+  if(!el)return;
+  const cur=el.value;
+  el.innerHTML='<option value="">미정</option>'+html.replace('<option value="">선택</option>','');
+  if(cur)el.value=cur;
+}
+
+function refreshRetestClassSelect(){
+  const html=getClassOptions();
+  const el=document.getElementById('rs-class');
+  if(!el)return;
+  const cur=el.value;
+  el.innerHTML=html;
+  if(cur)el.value=cur;
+}
+
+function loadAligoToForm(){
+  const cfg=loadAligoConfig();
+  const idEl=document.getElementById('aligo-id');
+  const keyEl=document.getElementById('aligo-key');
+  const senderEl=document.getElementById('aligo-sender');
+  if(idEl&&cfg.id)idEl.value=cfg.id;
+  if(keyEl&&cfg.key)keyEl.value=cfg.key;
+  if(senderEl&&cfg.sender)senderEl.value=cfg.sender;
+}
+
+// ── 반 이름 자동 변환 (메이크에듀 형식 → 학원 반 이름) ──────────────────────────
+function parseClassName(raw){
+  if(!raw) return '';
+  let s = String(raw).trim();
+  // "26년 중등1-1" → "1-1", "26년 중등 2-3" → "2-3"
+  // "26년 고등 2" → "고2", "26년 초등 6A" → "초등 6A"
+  s = s.replace(/^\d{2}년\s*/,''); // 연도 제거
+  s = s.replace(/^중등\s*/,'');    // "중등" 제거
+  s = s.replace(/^고등\s*/,'고');  // "고등" → "고"
+  s = s.replace(/^초등\s*/,'초등 ');// "초등" → "초등 "
+  return s.trim();
+}
+
+// ── 명단 가져오기 ──────────────────────────
+let importRows = [];
+
+function resetImport(){
+  importRows = [];
+  document.getElementById('import-preview').style.display='none';
+  document.getElementById('import-result').style.display='none';
+  document.getElementById('import-dropzone').style.display='block';
+  const fi = document.getElementById('import-file');
+  if(fi) fi.value='';
+}
+
+function cancelImport(){
+  resetImport();
+}
+
+// 드래그앤드롭
+document.addEventListener('DOMContentLoaded',()=>{
+  const dz = document.getElementById('import-dropzone');
+  if(!dz) return;
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.style.background='#fce4ef';});
+  dz.addEventListener('dragleave',()=>dz.style.background='#fff8fb');
+  dz.addEventListener('drop',e=>{
+    e.preventDefault();
+    dz.style.background='#fff8fb';
+    const file = e.dataTransfer.files[0];
+    if(file) processImportFile(file);
+  });
+});
+
+function handleImportFile(input){
+  if(input.files[0]) processImportFile(input.files[0]);
+}
+
+function processImportFile(file){
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, {type:'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+
+      const existing = load();
+      importRows = [];
+
+      rows.forEach(row=>{
+        const name = String(row['이름']||'').trim();
+        if(!name) return;
+        const parentTel = String(row['보호자연락처']||'').trim();
+        const isDup = existing.some(s=>s.name===name && s.parentTel===parentTel);
+        const assignedClass = parseClassName(row['수업']);
+        const regDate = row['입학일'] ? String(row['입학일']).slice(0,10).replace(/(\d{4})(\d{2})(\d{2})/,'$1-$2-$3') : '';
+
+        importRows.push({
+          name,
+          school: String(row['학교']||'').trim(),
+          grade: String(row['학년']||'').trim(),
+          assignedClass,
+          parentTel,
+          studentTel: String(row['원생연락처']||'').trim(),
+          regDate,
+          isDup,
+          status: '등록완료',
+          consultDate: regDate || today(),
+        });
+      });
+
+      showImportPreview();
+    } catch(err){
+      alert('파일을 읽는 중 오류가 발생했습니다.\n메이크에듀에서 내보낸 xlsx 파일인지 확인해주세요.');
+      console.error(err);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function showImportPreview(){
+  const newCount = importRows.filter(r=>!r.isDup).length;
+  const dupCount = importRows.filter(r=>r.isDup).length;
+  document.getElementById('import-dropzone').style.display='none';
+  document.getElementById('import-summary').innerHTML =
+    `총 <b>${importRows.length}명</b> 발견 &nbsp;|&nbsp; 신규 <b style="color:#CC0066">${newCount}명</b> 가져오기 예정 &nbsp;|&nbsp; 중복 <b style="color:#888">${dupCount}명</b> 건너뜀`;
+  const tbody = document.getElementById('import-preview-tbody');
+  tbody.innerHTML = importRows.map(r=>`<tr style="opacity:${r.isDup?0.4:1}">
+    <td>${r.isDup?'<span class="badge badge-cancel">중복</span>':'<span class="badge badge-registered">신규</span>'}</td>
+    <td><b>${r.name}</b></td>
+    <td>${r.school}</td>
+    <td>${r.grade}</td>
+    <td><span style="color:#CC0066;font-weight:500">${r.assignedClass||'—'}</span></td>
+    <td>${r.parentTel||'—'}</td>
+    <td>${r.studentTel||'—'}</td>
+    <td>${r.regDate||'—'}</td>
+  </tr>`).join('');
+  document.getElementById('import-preview').style.display='block';
+}
+
+function doImport(){
+  const data = load();
+  const newStudents = importRows.filter(r=>!r.isDup).map(r=>({
+    id: 's_'+Date.now()+'_'+Math.random().toString(36).slice(2),
+    name: r.name,
+    school: r.school,
+    grade: r.grade,
+    assignedClass: r.assignedClass,
+    parentTel: r.parentTel,
+    studentTel: r.studentTel,
+    status: '등록완료',
+    consultDate: r.consultDate,
+    regDate: r.regDate,
+    note: '',
+  }));
+  save([...data, ...newStudents]);
+
+  // 새로 등장한 반이 있으면 반 목록에 자동 추가
+  const classes = loadClasses();
+  const classNames = classes.map(c=>c.name);
+  const newClasses = [...new Set(newStudents.map(s=>s.assignedClass).filter(Boolean))].filter(c=>!classNames.includes(c));
+  if(newClasses.length){
+    newClasses.forEach(name=>{
+      const type = name.startsWith('고')?'고등':name.startsWith('초등')?'초등':'중등';
+      const quota = type==='고등'?12:type==='초등'?6:9;
+      classes.push({name,type,quota,time:''});
+    });
+    saveClasses(classes);
+    refreshAllClassSelects();
+  }
+
+  document.getElementById('import-preview').style.display='none';
+  document.getElementById('import-result').style.display='block';
+  document.getElementById('import-result-msg').textContent=`${newStudents.length}명 가져오기 완료!`;
+  document.getElementById('import-result-sub').textContent=`중복 ${importRows.filter(r=>r.isDup).length}명 건너뜀${newClasses.length?` | 새 반 ${newClasses.length}개 자동 추가됨`:''}`;
+  renderToday();
+}
+</script>
+
+<!-- 시작 팝업 모달 -->
+<div class="modal-overlay" id="startup-modal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header" style="background:#CC0066">
+      <div>
+        <h3 style="color:#fff;font-size:15px;margin-bottom:3px">오늘 새로 등록된 학생이 있나요?</h3>
+        <div style="font-size:11px;color:#FFB6C1" id="startup-date"></div>
+      </div>
+      <button class="modal-close" onclick="closeStartupPopup()" style="color:#FFB6C1;font-size:22px">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px">
+      <div style="background:#FFF0F5;border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:#CC0066;line-height:1.7">
+        새로 등록된 학생의 기본 정보를 빠르게 입력하세요.<br>
+        여러 명이면 저장 후 계속 입력하시면 됩니다.
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div class="f"><label>학생 이름 *</label><input type="text" id="q-name" placeholder="홍길동"></div>
+        <div class="f"><label>학교명</label><input type="text" id="q-school" placeholder="이유정중학교"></div>
+        <div class="f"><label>학년</label>
+          <select id="q-grade">
+            <option value="">선택</option>
+            <optgroup label="초등"><option>초3</option><option>초4</option><option>초5</option><option>초6</option></optgroup>
+            <optgroup label="중등"><option>중1</option><option>중2</option><option>중3</option></optgroup>
+            <optgroup label="고등"><option>고1</option><option>고2</option><option>고3</option></optgroup>
+          </select>
+        </div>
+        <div class="f"><label>배정반</label>
+          <select id="q-class">
+            <option value="">선택</option>
+            <optgroup label="초등"><option>초등 6A</option><option>초등 6B</option></optgroup>
+            <optgroup label="중등">
+              <option>1-1</option><option>1-2</option><option>1-3</option><option>1-4</option>
+              <option>2-1</option><option>2-2</option><option>2-3</option>
+              <option>3-1</option><option>3-2</option><option>3-3</option>
+            </optgroup>
+            <optgroup label="고등"><option>고1</option><option>고2</option><option>고3</option></optgroup>
+          </select>
+        </div>
+        <div class="f"><label>학부모 연락처</label><input type="tel" id="q-parent-tel" placeholder="01012345678"></div>
+        <div class="f"><label>학생 연락처</label><input type="tel" id="q-student-tel" placeholder="01012345678"></div>
+        <div class="f full"><label>메모 (선택)</label><input type="text" id="q-note" placeholder="특이사항 등"></div>
+      </div>
+      <div id="q-save-msg" style="font-size:12px;color:#CC0066;height:16px;margin-bottom:8px;text-align:center"></div>
+      <div style="display:flex;gap:10px">
+        <button class="btn-primary" style="flex:1" onclick="saveQuickStudent()">저장하고 계속 입력</button>
+        <button class="btn-secondary" onclick="closeStartupPopup()">오늘은 없음 / 닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('startup-date').textContent = new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'});
+document.getElementById('startup-modal').addEventListener('click',function(e){if(e.target===this)closeStartupPopup()});
+showStartupPopup();
+</script>
+</body>
+</html>
